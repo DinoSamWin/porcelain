@@ -1,0 +1,365 @@
+{
+  "homeContent": {
+    "hero": {
+      "title": "Enamel Porcelain Objects",
+      "subtitle": "A compact visual edit for European buyer meetings.",
+      "primaryCta": "Explore",
+      "secondaryCta": "Contact",
+      "image": "/images/phase1/plum-lidded-censer.png"
+    },
+    "sellingPoints": [
+      {
+        "title": "Visual-first catalog",
+        "body": "Made for QR-code sharing when product names and specifications are still being confirmed."
+      },
+      {
+        "title": "Collect buyer interest",
+        "body": "Buyers can save pieces to an inquiry list and leave contact details without creating an account."
+      },
+      {
+        "title": "Factory details later",
+        "body": "Dimensions, MOQ, sample fee, and packaging can be confirmed by the sales team after interest is clear."
+      }
+    ],
+    "featuredCategoryIds": [
+      "cat-censers",
+      "cat-vessels",
+      "cat-centerpieces"
+    ],
+    "featuredProductIds": [
+      "prod-plum-lidded-censer",
+      "prod-blue-floral-censer",
+      "prod-yellow-enamel-vessel"
+    ]
+  },
+  "categories": [
+    {
+      "id": "cat-censers",
+      "name": "Decorative Censers",
+      "slug": "decorative-censers",
+      "description": "Lidded enamel porcelain pieces with gilded mounts for luxury interior display.",
+      "coverImage": "/images/phase1/blue-floral-censer.png",
+      "sortOrder": 1,
+      "status": "published"
+    },
+    {
+      "id": "cat-vessels",
+      "name": "Vessels & Vases",
+      "slug": "vessels-and-vases",
+      "description": "Statement vessels with hand-painted enamel surfaces and sculptural metal details.",
+      "coverImage": "/images/phase1/butterfly-shoulder-vessel.png",
+      "sortOrder": 2,
+      "status": "published"
+    },
+    {
+      "id": "cat-centerpieces",
+      "name": "Centerpieces",
+      "slug": "centerpieces",
+      "description": "Decorative porcelain objects selected for showroom, hotel, and private interior projects.",
+      "coverImage": "/images/phase1/yellow-enamel-vessel.png",
+      "sortOrder": 3,
+      "status": "published"
+    }
+  ],
+  "collections": [
+    {
+      "id": "col-enamel-edit",
+      "name": "Enamel Porcelain Edit",
+      "slug": "enamel-porcelain-edit",
+      "description": "A compact buyer-facing selection prepared for early conversations with importers and interior buyers.",
+      "coverImage": "/images/phase1/plum-lidded-censer.png",
+      "marketFit": [
+        "Europe",
+        "Middle East",
+        "Retail",
+        "Importer"
+      ]
+    },
+    {
+      "id": "col-blue-white",
+      "name": "Blue & White Gilded",
+      "slug": "blue-white-gilded",
+      "description": "Blue-and-white porcelain with gilded bronze-style fittings for classic European interiors.",
+      "coverImage": "/images/phase1/blue-floral-censer.png",
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-plum-lidded-censer",
+      "slug": "plum-lidded-enamel-censer",
+      "name": "Plum Lidded Enamel Censer",
+      "sku": "REF-EN-001",
+      "categoryId": "cat-censers",
+      "collectionId": "col-enamel-edit",
+      "material": "Enamel porcelain with gilded metal mounts",
+      "color": "Black, vermilion red, antique gold",
+      "finish": "Gloss enamel with sculptural gilded details",
+      "moq": 1,
+      "leadTime": "Sales team to confirm",
+      "availability": "in-stock",
+      "customizable": true,
+      "marketFit": [
+        "Europe",
+        "Middle East",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Luxury interior display",
+        "Showroom selection",
+        "Buyer sample discussion"
+      ],
+      "style": "Ornamental enamel",
+      "tags": [
+        "Hero Piece",
+        "Enamel Porcelain",
+        "Gilded Mount"
+      ],
+      "description": "A hero enamel censer for buyer conversations.",
+      "images": [
+        {
+          "src": "/images/phase1/plum-lidded-censer.png",
+          "alt": "Black and vermilion enamel porcelain lidded censer"
+        },
+        {
+          "src": "/images/phase1/plum-lidded-censer-gallery.png",
+          "alt": "Gallery view of the plum enamel lidded censer"
+        }
+      ],
+      "specification": {
+        "size": "To be confirmed",
+        "weight": "To be confirmed",
+        "packaging": "Protective export packaging available after item confirmation",
+        "cartonSize": "To be confirmed",
+        "grossWeight": "To be confirmed",
+        "netWeight": "To be confirmed"
+      },
+      "attributes": [
+        {
+          "label": "Sales status",
+          "value": "In stock sample"
+        },
+        {
+          "label": "Customization",
+          "value": "Pattern and finish discussion available"
+        }
+      ],
+      "packagingInfo": [
+        "Dimensions on request.",
+        "Packing photos available.",
+        "MOQ and sample options by sales."
+      ],
+      "status": "published",
+      "sortOrder": 1,
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "updatedAt": "2026-08-04T00:00:00.000Z"
+    },
+    {
+      "id": "prod-blue-floral-censer",
+      "slug": "blue-floral-gilded-censer",
+      "name": "Blue Floral Gilded Censer",
+      "sku": "REF-EN-002",
+      "categoryId": "cat-censers",
+      "collectionId": "col-blue-white",
+      "material": "Blue-and-white porcelain with gilded metal lid and legs",
+      "color": "Cobalt blue, porcelain white, antique gold",
+      "finish": "Gloss glaze with pierced gilded lid",
+      "moq": 1,
+      "leadTime": "Sales team to confirm",
+      "availability": "made-to-order",
+      "customizable": true,
+      "marketFit": [
+        "Europe",
+        "Middle East",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Interior styling",
+        "Decorative retail",
+        "Importer preview"
+      ],
+      "style": "Blue-and-white classical",
+      "tags": [
+        "Blue & White",
+        "Gilded Lid",
+        "Buyer Favorite"
+      ],
+      "description": "A blue-and-white censer with gilded hardware.",
+      "images": [
+        {
+          "src": "/images/phase1/blue-floral-censer.png",
+          "alt": "Blue-and-white floral porcelain censer with gilded lid"
+        },
+        {
+          "src": "/images/phase1/blue-floral-censer-gallery.png",
+          "alt": "Gallery view of the blue floral gilded censer"
+        }
+      ],
+      "specification": {
+        "size": "To be confirmed",
+        "weight": "To be confirmed",
+        "packaging": "Protective export packaging available after item confirmation",
+        "cartonSize": "To be confirmed",
+        "grossWeight": "To be confirmed",
+        "netWeight": "To be confirmed"
+      },
+      "attributes": [
+        {
+          "label": "Sales status",
+          "value": "Accepts customization"
+        },
+        {
+          "label": "Market fit",
+          "value": "Classic European interiors"
+        }
+      ],
+      "packagingInfo": [
+        "Dimensions on request.",
+        "Packing photos available.",
+        "MOQ and sample options by sales."
+      ],
+      "status": "published",
+      "sortOrder": 2,
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "updatedAt": "2026-08-04T00:00:00.000Z"
+    },
+    {
+      "id": "prod-yellow-enamel-vessel",
+      "slug": "yellow-enamel-treasure-vessel",
+      "name": "Yellow Enamel Treasure Vessel",
+      "sku": "REF-EN-003",
+      "categoryId": "cat-centerpieces",
+      "collectionId": "col-enamel-edit",
+      "material": "Enamel porcelain with gilded handles and cabochon accents",
+      "color": "Imperial yellow, cobalt blue, jade green, antique gold",
+      "finish": "Gloss enamel with hand-painted floral scrolls",
+      "moq": 1,
+      "leadTime": "Sales team to confirm",
+      "availability": "pre-order",
+      "customizable": true,
+      "marketFit": [
+        "Europe",
+        "Middle East",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Statement decor",
+        "Hotel lobby styling",
+        "Private residence display"
+      ],
+      "style": "Color enamel decorative arts",
+      "tags": [
+        "Color Enamel",
+        "Statement Vessel",
+        "Gilded Handles"
+      ],
+      "description": "A colorful enamel vessel with a strong decorative profile.",
+      "images": [
+        {
+          "src": "/images/phase1/yellow-enamel-vessel.png",
+          "alt": "Yellow enamel porcelain treasure vessel with gilded handles"
+        }
+      ],
+      "specification": {
+        "size": "To be confirmed",
+        "weight": "To be confirmed",
+        "packaging": "Protective export packaging available after item confirmation",
+        "cartonSize": "To be confirmed",
+        "grossWeight": "To be confirmed",
+        "netWeight": "To be confirmed"
+      },
+      "attributes": [
+        {
+          "label": "Sales status",
+          "value": "Pre-order discussion"
+        },
+        {
+          "label": "Use case",
+          "value": "Statement interior display"
+        }
+      ],
+      "packagingInfo": [
+        "Dimensions on request.",
+        "Packing photos available.",
+        "MOQ and sample options by sales."
+      ],
+      "status": "published",
+      "sortOrder": 3,
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "updatedAt": "2026-08-04T00:00:00.000Z"
+    },
+    {
+      "id": "prod-butterfly-shoulder-vessel",
+      "slug": "butterfly-shoulder-display-vessel",
+      "name": "Butterfly Shoulder Display Vessel",
+      "sku": "REF-EN-004",
+      "categoryId": "cat-vessels",
+      "collectionId": "col-enamel-edit",
+      "material": "Enamel porcelain with gilded branch and butterfly details",
+      "color": "Ivory, navy blue, coral, pink, antique gold",
+      "finish": "Gloss enamel with decorative metalwork",
+      "moq": 1,
+      "leadTime": "Sales team to confirm",
+      "availability": "waiting-list",
+      "customizable": true,
+      "marketFit": [
+        "Europe",
+        "Middle East",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Showroom centerpiece",
+        "Interior project styling",
+        "Boutique retail display"
+      ],
+      "style": "Butterfly and floral decorative vessel",
+      "tags": [
+        "Butterfly Detail",
+        "Decorative Vessel",
+        "Collector Style"
+      ],
+      "description": "A sculptural vessel with butterfly and floral detailing.",
+      "images": [
+        {
+          "src": "/images/phase1/butterfly-shoulder-vessel.png",
+          "alt": "Butterfly shoulder enamel porcelain display vessel"
+        }
+      ],
+      "specification": {
+        "size": "To be confirmed",
+        "weight": "To be confirmed",
+        "packaging": "Protective export packaging available after item confirmation",
+        "cartonSize": "To be confirmed",
+        "grossWeight": "To be confirmed",
+        "netWeight": "To be confirmed"
+      },
+      "attributes": [
+        {
+          "label": "Sales status",
+          "value": "Waiting list"
+        },
+        {
+          "label": "Visual theme",
+          "value": "Butterfly and floral decorative vessel"
+        }
+      ],
+      "packagingInfo": [
+        "Dimensions on request.",
+        "Packing photos available.",
+        "MOQ and sample options by sales."
+      ],
+      "status": "published",
+      "sortOrder": 4,
+      "createdAt": "2026-08-04T00:00:00.000Z",
+      "updatedAt": "2026-08-04T00:00:00.000Z"
+    }
+  ]
+}

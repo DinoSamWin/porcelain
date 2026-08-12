@@ -8,6 +8,8 @@ export type MarketRegion =
 
 export type ProductStatus = "draft" | "published" | "archived";
 
+export type ProductAvailability = "in-stock" | "made-to-order" | "pre-order" | "waiting-list";
+
 export interface Category {
   id: string;
   name: string;
@@ -44,6 +46,11 @@ export interface ProductSpecification {
   netWeight: string;
 }
 
+export interface ProductAttribute {
+  label: string;
+  value: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -56,6 +63,7 @@ export interface Product {
   finish: string;
   moq: number;
   leadTime: string;
+  availability: ProductAvailability;
   customizable: boolean;
   marketFit: MarketRegion[];
   usage: string[];
@@ -64,6 +72,7 @@ export interface Product {
   description: string;
   images: ProductImage[];
   specification: ProductSpecification;
+  attributes: ProductAttribute[];
   packagingInfo: string[];
   status: ProductStatus;
   sortOrder: number;

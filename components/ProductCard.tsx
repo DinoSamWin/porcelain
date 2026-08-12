@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/domain";
 import { AddToInquiryButton } from "@/components/AddToInquiryButton";
+import { getAvailabilityShortLabel } from "@/lib/catalog-options";
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +23,7 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
       <div className="product-card__body">
         <div className="product-card__meta">
           <span>{product.tags[0]}</span>
+          <span>{getAvailabilityShortLabel(product.availability)}</span>
         </div>
         <h3>
           <Link href={`/products/${product.slug}`}>{product.name}</Link>

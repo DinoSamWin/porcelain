@@ -1,0 +1,250 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import type { CatalogContent } from "@/data/catalog";
+import type { Category, Product } from "@/types/domain";
+
+export const contentFilePath = path.join(process.cwd(), "data", "content.json");
+export const uploadDirPath = path.join(process.cwd(), "public", "uploads");
+
+interface GitHubContentResponse {
+  sha?: string;
+  content?: string;
+  encoding?: string;
+}
+
+interface ImageUploadPayload {
+  fileName: string;
+  buffer: Buffer;
+}
+
+export async function readCatalogContent() {
+  const github = getGitHubConfig();
+
+  if (github) {
+    const remote = await getGitHubContent("data/content.json");
+    if (remote.content && remote.encoding === "base64") {
+      return JSON.parse(Buffer.from(remote.content, "base64").toString("utf8")) as CatalogContent;
+    }
+  }
+
+  const raw = await fs.readFile(contentFilePath, "utf8");
+  return JSON.parse(raw) as CatalogContent;
+}
+
+export async function writeCatalogContent(content: CatalogContent) {
+  const nextContent = `${JSON.stringify(normalizeCatalogContent(content), null, 2)}\n`;
+  const github = getGitHubConfig();
+
+  if (github) {
+    await putGitHubContent({
+      filePath: "data/content.json",
+      content: Buffer.from(nextContent, "utf8"),
+      message: "Update catalog content from admin"
+    });
+    return;
+  }
+
+  await fs.writeFile(contentFilePath, nextContent, "utf8");
+}
+
+export async function saveUploadedImage({ fileName, buffer }: ImageUploadPayload) {
+  const github = getGitHubConfig();
+  const publicPath = `/uploads/${fileName}`;
+
+  if (github) {
+    await putGitHubContent({
+      filePath: `public/uploads/${fileName}`,
+      content: buffer,
+      message: `Upload product image ${fileName}`
+    });
+    return publicPath;
+  }
+
+  await fs.mkdir(uploadDirPath, { recursive: true });
+  await fs.writeFile(path.join(uploadDirPath, fileName), buffer);
+  return publicPath;
+}
+
+export function normalizeCatalogContent(content: CatalogContent): CatalogContent {
+  const products = content.products
+    .map((product, index) => normalizeProduct(product, index))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const categories = content.categories
+    .map((category, index) => normalizeCategory(category, index))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return {
+    homeContent: {
+      ...content.homeContent,
+      featuredProductIds: content.homeContent.featuredProductIds.filter((id) => products.some((product) => product.id === id)),
+      featuredCategoryIds: content.homeContent.featuredCategoryIds.filter((id) => categories.some((category) => category.id === id))
+    },
+    categories,
+    collections: content.collections,
+    products
+  };
+}
+
+function normalizeProduct(product: Product, index: number): Product {
+  const slug = product.slug || slugify(product.name || product.sku || `product-${index + 1}`);
+  const id = product.id || `prod-${slug}`;
+  const now = new Date().toISOString();
+
+  return {
+    ...product,
+    id,
+    slug,
+    sku: product.sku || `REF-${String(index + 1).padStart(3, "0")}`,
+    categoryId: product.categoryId,
+    collectionId: product.collectionId,
+    moq: Number(product.moq) || 1,
+    availability: product.availability ?? "waiting-list",
+    marketFit: product.marketFit ?? [],
+    usage: product.usage.filter(Boolean),
+    tags: product.tags.filter(Boolean),
+    images: product.images.filter((image) => image.src),
+    attributes: product.attributes.filter((attribute) => attribute.label || attribute.value),
+    packagingInfo: product.packagingInfo.filter(Boolean),
+    sortOrder: Number(product.sortOrder) || index + 1,
+    status: product.status ?? "published",
+    createdAt: product.createdAt || now,
+    updatedAt: now
+  };
+}
+
+function normalizeCategory(category: Category, index: number): Category {
+  const slug = category.slug || slugify(category.name || `category-${index + 1}`);
+
+  return {
+    ...category,
+    id: category.id || `cat-${slug}`,
+    slug,
+    sortOrder: Number(category.sortOrder) || index + 1,
+    status: category.status ?? "published"
+  };
+}
+
+export function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function assertAdminAccess(request: Request) {
+  const configuredToken = process.env.ADMIN_TOKEN;
+  const providedToken = request.headers.get("x-admin-token") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+
+  if (!configuredToken) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("ADMIN_TOKEN is not configured. Add it in Vercel environment variables before using the online admin.");
+    }
+    return;
+  }
+
+  if (providedToken !== configuredToken) {
+    throw new Error("Invalid admin token.");
+  }
+}
+
+export function getPublishMode() {
+  return getGitHubConfig() ? "github" : "local";
+}
+
+function getGitHubConfig() {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO;
+
+  if (!token || !repo) {
+    return null;
+  }
+
+  const [owner, name] = repo.split("/");
+
+  if (!owner || !name) {
+    throw new Error("GITHUB_REPO must use the format owner/repo.");
+  }
+
+  return {
+    owner,
+    repo: name,
+    token,
+    branch: process.env.GITHUB_BRANCH || "main"
+  };
+}
+
+async function getGitHubContent(filePath: string) {
+  const github = getGitHubConfig();
+  if (!github) {
+    throw new Error("GitHub publishing is not configured.");
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${github.owner}/${github.repo}/contents/${encodeURIComponentPath(filePath)}?ref=${github.branch}`,
+    {
+      headers: githubHeaders(github.token),
+      cache: "no-store"
+    }
+  );
+
+  if (response.status === 404) {
+    return {};
+  }
+
+  if (!response.ok) {
+    throw new Error(`GitHub read failed: ${response.status} ${await response.text()}`);
+  }
+
+  return (await response.json()) as GitHubContentResponse;
+}
+
+async function putGitHubContent({
+  filePath,
+  content,
+  message
+}: {
+  filePath: string;
+  content: Buffer;
+  message: string;
+}) {
+  const github = getGitHubConfig();
+  if (!github) {
+    throw new Error("GitHub publishing is not configured.");
+  }
+
+  const current = await getGitHubContent(filePath);
+  const response = await fetch(`https://api.github.com/repos/${github.owner}/${github.repo}/contents/${encodeURIComponentPath(filePath)}`, {
+    method: "PUT",
+    headers: githubHeaders(github.token),
+    body: JSON.stringify({
+      message,
+      content: content.toString("base64"),
+      branch: github.branch,
+      sha: current.sha,
+      committer: {
+        name: process.env.GITHUB_COMMITTER_NAME || "Aurelia Admin",
+        email: process.env.GITHUB_COMMITTER_EMAIL || "admin@aureliaceramics.example"
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub save failed: ${response.status} ${await response.text()}`);
+  }
+}
+
+function githubHeaders(token: string) {
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+}
+
+function encodeURIComponentPath(filePath: string) {
+  return filePath.split("/").map(encodeURIComponent).join("/");
+}

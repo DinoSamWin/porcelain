@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
 import { getProductById, homeContent, products } from "@/data/catalog";
+import { getAvailabilityShortLabel } from "@/lib/catalog-options";
 
 const featuredProducts = homeContent.featuredProductIds
   .map((id) => getProductById(id))
@@ -70,7 +71,7 @@ export default function HomePage() {
                 <Image src={product.images[0].src} alt={product.images[0].alt} fill loading="eager" unoptimized sizes="92px" />
               </div>
               <div>
-                <span>{String(index + 1).padStart(2, "0")} / {product.tags[0]}</span>
+                <span>{String(index + 1).padStart(2, "0")} / {getAvailabilityShortLabel(product.availability)}</span>
                 <h3>{product.name}</h3>
               </div>
               <ArrowRight size={17} aria-hidden="true" />

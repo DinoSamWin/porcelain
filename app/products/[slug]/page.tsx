@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { AddToInquiryButton } from "@/components/AddToInquiryButton";
 import { ProductCard } from "@/components/ProductCard";
 import { getCategoryById, getCollectionById, getProductBySlug, getRelatedProducts, products } from "@/data/catalog";
+import { getAvailabilityLabel } from "@/lib/catalog-options";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -71,6 +72,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <div className="detail-meta">
             <span>{product.sku}</span>
             <span>{category?.name}</span>
+            <span>{getAvailabilityLabel(product.availability)}</span>
           </div>
           <div className="detail-table detail-table--phase">
             <div>
@@ -89,6 +91,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               <span>Use</span>
               <strong>{product.usage[0]}</strong>
             </div>
+            {product.attributes.slice(0, 2).map((attribute) => (
+              <div key={`${attribute.label}-${attribute.value}`}>
+                <span>{attribute.label}</span>
+                <strong>{attribute.value}</strong>
+              </div>
+            ))}
           </div>
           <div className="product-info__actions">
             <AddToInquiryButton productId={product.id} quantity={1} className="btn btn-primary" />
