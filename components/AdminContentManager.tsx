@@ -9,6 +9,15 @@ import type { Product } from "@/types/domain";
 
 type PublishMode = "github" | "local";
 
+interface RuntimeStatus {
+  publishMode: PublishMode;
+  missing: string[];
+  invalid?: string[];
+  branch?: string;
+  isOnlineRuntime?: boolean;
+  canPublishOnline: boolean;
+}
+
 const emptyContent: CatalogContent = {
   homeContent: {
     hero: {
@@ -55,11 +64,19 @@ const blankSpec = {
   netWeight: "待确认"
 };
 
+const adminAvailabilityLabels: Record<Product["availability"], string> = {
+  "in-stock": "现货",
+  "made-to-order": "接受定制",
+  "pre-order": "期货 / 预订",
+  "waiting-list": "需等待"
+};
+
 export function AdminContentManager() {
   const [adminToken, setAdminToken] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [content, setContent] = useState<CatalogContent>(emptyContent);
   const [publishMode, setPublishMode] = useState<PublishMode>("local");
+  const [runtime, setRuntime] = useState<RuntimeStatus | null>(null);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [status, setStatus] = useState("请输入后台密码登录");
   const [busy, setBusy] = useState(false);
@@ -68,6 +85,7 @@ export function AdminContentManager() {
     () => content.products.find((product) => product.id === selectedProductId) ?? content.products[0],
     [content.products, selectedProductId]
   );
+  const publishingBlocked = Boolean(runtime && !runtime.canPublishOnline);
 
   async function login() {
     setBusy(true);
@@ -84,9 +102,10 @@ export function AdminContentManager() {
 
       setContent(result.content ?? emptyContent);
       setPublishMode(result.publishMode ?? "local");
+      setRuntime(result.runtime ?? null);
       setSelectedProductId(result.content?.products?.[0]?.id ?? "");
       setLoggedIn(true);
-      setStatus("已登录，可以上传商品");
+      setStatus(getRuntimeStatusText(result.runtime) ?? "已登录，可以上传商品");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "登录失败");
     } finally {
@@ -178,6 +197,7 @@ export function AdminContentManager() {
         body: formData
       });
       const result = await response.json();
+      if (result.runtime) setRuntime(result.runtime);
 
       if (!response.ok) {
         throw new Error(result.error ?? "上传失败");
@@ -207,6 +227,7 @@ export function AdminContentManager() {
         body: JSON.stringify(contentToSave)
       });
       const result = await response.json();
+      if (result.runtime) setRuntime(result.runtime);
 
       if (!response.ok) {
         throw new Error(result.error ?? "保存失败");
@@ -266,7 +287,7 @@ export function AdminContentManager() {
               新建空商品
             </button>
             <UploadButton
-              disabled={busy}
+              disabled={busy || publishingBlocked}
               label="上传图片新建商品"
               onUpload={(files) => {
                 const file = files[0];
@@ -274,7 +295,7 @@ export function AdminContentManager() {
                 void uploadImage(file, (src, alt) => createProduct(src, alt));
               }}
             />
-            <button className="btn btn-primary" type="button" onClick={saveContent} disabled={busy}>
+            <button className="btn btn-primary" type="button" onClick={saveContent} disabled={busy || publishingBlocked}>
               <Save size={16} aria-hidden="true" />
               保存发布
             </button>
@@ -286,8 +307,13 @@ export function AdminContentManager() {
         </header>
 
         <div className="admin-simple-status">
-          <span>{publishMode === "github" ? "线上发布模式" : "本地模式"}</span>
+          <span>{getPublishModeLabel(publishMode, runtime)}</span>
           <p>{status}</p>
+          {runtime?.canPublishOnline === false ? (
+            <p className="admin-runtime-warning">
+              {getRuntimeStatusText(runtime)}配置完成后需要在 Vercel 重新部署。
+            </p>
+          ) : null}
         </div>
 
         {content.products.length === 0 ? (
@@ -296,7 +322,7 @@ export function AdminContentManager() {
             <h2>还没有商品</h2>
             <p>点击上传图片，新商品会自动创建，不需要复制图片路径。</p>
             <UploadButton
-              disabled={busy}
+              disabled={busy || publishingBlocked}
               label="上传第一张商品图"
               onUpload={(files) => {
                 const file = files[0];
@@ -332,7 +358,8 @@ export function AdminContentManager() {
 
             {selectedProduct ? (
           <ProductSimpleEditor
-                product={selectedProduct}
+              product={selectedProduct}
+                disabled={busy || publishingBlocked}
                 onChange={(patch) => updateProduct(selectedProduct.id, patch)}
                 onRemove={() => removeProduct(selectedProduct.id)}
                 onUpload={uploadImage}
@@ -351,6 +378,26 @@ function getPublishSummary(product: Product) {
   if (product.isFeatured) places.push(`推荐${product.featuredOrder ?? product.sortOrder}`);
   if (product.isHeroBanner) places.push(`Banner${product.heroOrder ?? product.sortOrder}`);
   return places.length > 0 ? places.join(" / ") : "未发布";
+}
+
+function getPublishModeLabel(publishMode: PublishMode, runtime: RuntimeStatus | null) {
+  if (runtime?.isOnlineRuntime && !runtime.canPublishOnline) {
+    return "线上发布配置未完成";
+  }
+  return publishMode === "github" ? "线上发布模式" : "本地模式";
+}
+
+function getRuntimeStatusText(runtime?: RuntimeStatus | null) {
+  if (!runtime || runtime.canPublishOnline) {
+    return null;
+  }
+
+  const problems = [...(runtime.missing ?? []), ...(runtime.invalid ?? [])];
+  if (problems.length === 0) {
+    return "线上发布配置还没有完成。";
+  }
+
+  return `线上发布配置缺失或错误：${problems.join("、")}。`;
 }
 
 function normalizePublishContent(content: CatalogContent): CatalogContent {
@@ -380,11 +427,13 @@ function normalizePublishContent(content: CatalogContent): CatalogContent {
 
 function ProductSimpleEditor({
   product,
+  disabled = false,
   onChange,
   onRemove,
   onUpload
 }: {
   product: Product;
+  disabled?: boolean;
   onChange: (patch: Partial<Product>) => void;
   onRemove: () => void;
   onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
@@ -418,6 +467,7 @@ function ProductSimpleEditor({
       <div className="admin-simple-form">
         <div className="admin-simple-row">
           <UploadButton
+            disabled={disabled}
             label="替换主图"
             onUpload={(files) => {
               const file = files[0];
@@ -425,7 +475,7 @@ function ProductSimpleEditor({
               void onUpload(file, replaceMainImage);
             }}
           />
-          <UploadButton label="追加详情图" multiple onUpload={appendGalleryImages} />
+          <UploadButton disabled={disabled} label="追加详情图" multiple onUpload={appendGalleryImages} />
         </div>
 
         <section className="admin-publish-box">
@@ -498,7 +548,7 @@ function ProductSimpleEditor({
             <select value={product.availability} onChange={(event) => onChange({ availability: event.target.value as Product["availability"] })}>
               {availabilityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {adminAvailabilityLabels[option.value]}
                 </option>
               ))}
             </select>

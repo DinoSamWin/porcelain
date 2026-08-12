@@ -3001,6 +3001,12 @@ textarea:focus {
   background: #fbfaf6;
 }
 
+.admin-runtime-warning {
+  margin-top: 8px !important;
+  color: #8a3a1e !important;
+  font-weight: 700;
+}
+
 .admin-empty-uploader {
   display: grid;
   justify-items: center;

@@ -44,6 +44,7 @@ export async function writeCatalogContent(content: CatalogContent) {
     return;
   }
 
+  assertWritableLocalMode();
   await fs.writeFile(contentFilePath, nextContent, "utf8");
 }
 
@@ -60,6 +61,7 @@ export async function saveUploadedImage({ fileName, buffer }: ImageUploadPayload
     return publicPath;
   }
 
+  assertWritableLocalMode();
   await fs.mkdir(uploadDirPath, { recursive: true });
   await fs.writeFile(path.join(uploadDirPath, fileName), buffer);
   return publicPath;
@@ -143,41 +145,92 @@ export function assertAdminAccess(request: Request) {
   const providedToken = request.headers.get("x-admin-token") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
   if (!configuredToken) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("ADMIN_TOKEN is not configured. Add it in Vercel environment variables before using the online admin.");
+    if (isOnlineRuntime()) {
+      throw new Error("线上后台还没有配置 ADMIN_TOKEN。请先在 Vercel 环境变量里添加后台密码，并重新部署。");
     }
     return;
   }
 
   if (providedToken !== configuredToken) {
-    throw new Error("Invalid admin token.");
+    throw new Error("后台密码不正确。");
   }
 }
 
 export function getPublishMode() {
-  return getGitHubConfig() ? "github" : "local";
+  return getGitHubConfig({ throwOnInvalid: false }) ? "github" : "local";
 }
 
-function getGitHubConfig() {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPO;
+export function getAdminRuntimeStatus() {
+  const onlineRuntime = isOnlineRuntime();
+  const githubRepo = parseGitHubRepo(process.env.GITHUB_REPO);
+  const missing = onlineRuntime
+    ? [
+        ["ADMIN_TOKEN", process.env.ADMIN_TOKEN],
+        ["GITHUB_TOKEN", process.env.GITHUB_TOKEN],
+        ["GITHUB_REPO", process.env.GITHUB_REPO]
+      ]
+        .filter(([, value]) => !value)
+        .map(([key]) => key)
+    : [];
+  const invalid = process.env.GITHUB_REPO && !githubRepo ? ["GITHUB_REPO 格式应为 owner/repo，例如 DinoSamWin/porcelain"] : [];
+  const hasGitHubConfig = Boolean(process.env.GITHUB_TOKEN && githubRepo);
 
-  if (!token || !repo) {
+  return {
+    publishMode: hasGitHubConfig ? "github" : "local",
+    missing,
+    invalid,
+    branch: process.env.GITHUB_BRANCH || "main",
+    isOnlineRuntime: onlineRuntime,
+    canPublishOnline: !onlineRuntime || (hasGitHubConfig && missing.length === 0 && invalid.length === 0)
+  };
+}
+
+function assertWritableLocalMode() {
+  if (isOnlineRuntime()) {
+    throw new Error(
+      "线上后台缺少 GitHub 发布配置。请在 Vercel 环境变量中配置 GITHUB_TOKEN、GITHUB_REPO，并重新部署。GITHUB_BRANCH 不填时默认使用 main。"
+    );
+  }
+}
+
+function isOnlineRuntime() {
+  return Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
+}
+
+function getGitHubConfig({ throwOnInvalid = true } = {}) {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = parseGitHubRepo(process.env.GITHUB_REPO);
+
+  if (!token || !process.env.GITHUB_REPO) {
     return null;
   }
 
-  const [owner, name] = repo.split("/");
-
-  if (!owner || !name) {
-    throw new Error("GITHUB_REPO must use the format owner/repo.");
+  if (!repo) {
+    if (throwOnInvalid) {
+      throw new Error("GITHUB_REPO 格式错误，应填写成 owner/repo，例如 DinoSamWin/porcelain。");
+    }
+    return null;
   }
 
   return {
-    owner,
-    repo: name,
+    owner: repo.owner,
+    repo: repo.name,
     token,
     branch: process.env.GITHUB_BRANCH || "main"
   };
+}
+
+function parseGitHubRepo(repo: string | undefined) {
+  if (!repo) {
+    return null;
+  }
+
+  const [owner, name, extra] = repo.split("/");
+  if (!owner || !name || extra) {
+    return null;
+  }
+
+  return { owner, name };
 }
 
 async function getGitHubContent(filePath: string) {
