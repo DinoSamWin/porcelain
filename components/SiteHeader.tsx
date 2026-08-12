@@ -2,6 +2,7 @@
 
 import { Menu, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 
@@ -16,6 +17,11 @@ const navItems = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { itemCount } = useCart();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <>

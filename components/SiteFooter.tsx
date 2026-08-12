@@ -1,9 +1,11 @@
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
+import { AdminAwareFooter } from "@/components/AdminAwareFooter";
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer">
+    <AdminAwareFooter>
+      <footer className="site-footer">
       <div className="footer-cta">
         <div>
           <h2>Save Interest, Then Let Sales Follow Up</h2>
@@ -69,6 +71,7 @@ export function SiteFooter() {
         <span>Privacy Policy</span>
         <span>Terms & Conditions</span>
       </div>
-    </footer>
+      </footer>
+    </AdminAwareFooter>
   );
 }

@@ -48,11 +48,18 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
         </div>
       </div>
 
-      <div className="product-grid">
-        {filtered.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {filtered.length > 0 ? (
+        <div className="product-grid">
+          {filtered.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty-catalog-state">
+          <h3>No products yet</h3>
+          <p>Upload the first product from the admin panel.</p>
+        </div>
+      )}
     </section>
   );
 }

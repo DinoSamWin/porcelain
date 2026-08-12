@@ -1,4 +1,4 @@
-import { ArrowRight, HeartHandshake, Sparkles } from "lucide-react";
+import { ArrowRight, HeartHandshake, ImageUp, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
@@ -13,24 +13,33 @@ const displayProducts = [...products].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export default function HomePage() {
   const heroProduct = featuredProducts[0];
+  const heroImage = homeContent.hero.image || heroProduct?.images[0]?.src;
+  const heroImageAlt = heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
 
   return (
     <>
       <section className="phase-hero" aria-label="Enamel porcelain showcase">
-        <div className="phase-hero__media">
-          <Image
-            src={homeContent.hero.image}
-            alt="Featured enamel porcelain lidded censer"
-            fill
-            loading="eager"
-            unoptimized
-            sizes="(max-width: 860px) 100vw, 54vw"
-          />
-          <div className="phase-hero__caption">
-            <span>Featured Piece</span>
-            <strong>{heroProduct?.name ?? "Enamel Porcelain"}</strong>
+        {heroImage ? (
+          <div className="phase-hero__media">
+            <Image
+              src={heroImage}
+              alt={heroImageAlt}
+              fill
+              loading="eager"
+              unoptimized
+              sizes="(max-width: 860px) 100vw, 54vw"
+            />
+            <div className="phase-hero__caption">
+              <span>Featured Piece</span>
+              <strong>{heroProduct?.name ?? "Enamel Porcelain"}</strong>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="phase-hero__empty">
+            <ImageUp size={42} aria-hidden="true" />
+            <span>Waiting for first product image</span>
+          </div>
+        )}
 
         <div className="phase-hero__copy">
           <span className="section-kicker">Aurelia Objects</span>
@@ -52,11 +61,19 @@ export default function HomePage() {
           <span>The Edit</span>
           <h2>First pieces</h2>
         </div>
-        <div className="product-grid product-grid--featured">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} featured />
-          ))}
-        </div>
+        {featuredProducts.length > 0 ? (
+          <div className="product-grid product-grid--featured">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} featured />
+            ))}
+          </div>
+        ) : (
+          <div className="empty-catalog-state">
+            <ImageUp size={28} aria-hidden="true" />
+            <h3>No products yet</h3>
+            <p>Upload products from the admin panel to publish this section.</p>
+          </div>
+        )}
       </section>
 
       <section className="phase-shelf section-pad" id="products">
@@ -64,20 +81,22 @@ export default function HomePage() {
           <span>Objects</span>
           <h2>Product shelf</h2>
         </div>
-        <div className="product-shelf">
-          {displayProducts.map((product, index) => (
-            <Link className="shelf-item" href={`/products/${product.slug}`} key={product.id}>
-              <div className="shelf-item__image">
-                <Image src={product.images[0].src} alt={product.images[0].alt} fill loading="eager" unoptimized sizes="92px" />
-              </div>
-              <div>
-                <span>{String(index + 1).padStart(2, "0")} / {getAvailabilityShortLabel(product.availability)}</span>
-                <h3>{product.name}</h3>
-              </div>
-              <ArrowRight size={17} aria-hidden="true" />
-            </Link>
-          ))}
-        </div>
+        {displayProducts.length > 0 ? (
+          <div className="product-shelf">
+            {displayProducts.map((product, index) => (
+              <Link className="shelf-item" href={`/products/${product.slug}`} key={product.id}>
+                <div className="shelf-item__image">
+                  <Image src={product.images[0].src} alt={product.images[0].alt} fill loading="eager" unoptimized sizes="92px" />
+                </div>
+                <div>
+                  <span>{String(index + 1).padStart(2, "0")} / {getAvailabilityShortLabel(product.availability)}</span>
+                  <h3>{product.name}</h3>
+                </div>
+                <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        ) : null}
         <div className="center-action">
           <Link className="btn btn-secondary" href="/products">
             Full Product List
