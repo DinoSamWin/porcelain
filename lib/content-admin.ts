@@ -252,7 +252,7 @@ async function getGitHubContent(filePath: string) {
   }
 
   if (!response.ok) {
-    throw new Error(`GitHub read failed: ${response.status} ${await response.text()}`);
+    throw new Error(await formatGitHubApiError(response, "读取 GitHub 内容"));
   }
 
   return (await response.json()) as GitHubContentResponse;
@@ -289,7 +289,35 @@ async function putGitHubContent({
   });
 
   if (!response.ok) {
-    throw new Error(`GitHub save failed: ${response.status} ${await response.text()}`);
+    throw new Error(await formatGitHubApiError(response, "保存到 GitHub"));
+  }
+}
+
+async function formatGitHubApiError(response: Response, action: string) {
+  const body = await response.text();
+  const githubMessage = parseGitHubErrorMessage(body);
+
+  if (response.status === 401) {
+    return `${action}失败：GITHUB_TOKEN 无效或已过期。请重新生成 GitHub Token，更新到 Vercel 环境变量 GITHUB_TOKEN，然后重新部署。`;
+  }
+
+  if (response.status === 403 && githubMessage.includes("Resource not accessible by personal access token")) {
+    return `${action}失败：当前 GITHUB_TOKEN 没有写入仓库的权限。请在 GitHub Token 里选择仓库 DinoSamWin/porcelain，并把 Repository permissions 里的 Contents 设置为 Read and write；如果仓库属于组织，还需要确认组织已批准这个 Token。更新 Vercel 环境变量后重新部署。`;
+  }
+
+  if (response.status === 404) {
+    return `${action}失败：没有找到仓库、分支或文件。请确认 GITHUB_REPO 是 DinoSamWin/porcelain，GITHUB_BRANCH 是 main，并且 Token 可以访问这个仓库。`;
+  }
+
+  return `${action}失败：GitHub 返回 ${response.status}${githubMessage ? `，${githubMessage}` : ""}。`;
+}
+
+function parseGitHubErrorMessage(body: string) {
+  try {
+    const parsed = JSON.parse(body) as { message?: string };
+    return parsed.message ?? body;
+  } catch {
+    return body;
   }
 }
 
