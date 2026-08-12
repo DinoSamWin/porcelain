@@ -9,9 +9,11 @@ export interface CatalogContent {
 }
 
 export const catalogContent = content as CatalogContent;
-export const categories = catalogContent.categories;
+export const categories = catalogContent.categories.filter((category) => category.status === "published");
 export const collections = catalogContent.collections;
-export const products = catalogContent.products;
+export const products = catalogContent.products
+  .filter((product) => product.status === "published" && Boolean(product.images[0]?.src))
+  .sort((a, b) => a.sortOrder - b.sortOrder);
 export const homeContent = catalogContent.homeContent;
 
 const now = "2026-08-04T00:00:00.000Z";

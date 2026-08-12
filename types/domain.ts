@@ -76,6 +76,10 @@ export interface Product {
   packagingInfo: string[];
   status: ProductStatus;
   sortOrder: number;
+  isFeatured?: boolean;
+  featuredOrder?: number;
+  isHeroBanner?: boolean;
+  heroOrder?: number;
   createdAt: string;
   updatedAt: string;
 }

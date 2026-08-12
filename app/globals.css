@@ -3095,6 +3095,34 @@ textarea:focus {
   gap: 16px;
 }
 
+.admin-publish-box {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #fbfaf6;
+}
+
+.admin-publish-box span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-publish-box p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-publish-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(110px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+}
+
 .admin-simple-two {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3172,6 +3200,7 @@ textarea:focus {
   }
 
   .admin-simple-two,
+  .admin-publish-grid,
   .admin-simple-gallery {
     grid-template-columns: 1fr;
   }

@@ -107,6 +107,10 @@ function normalizeProduct(product: Product, index: number): Product {
     attributes: product.attributes.filter((attribute) => attribute.label || attribute.value),
     packagingInfo: product.packagingInfo.filter(Boolean),
     sortOrder: Number(product.sortOrder) || index + 1,
+    isFeatured: Boolean(product.isFeatured),
+    featuredOrder: Number(product.featuredOrder) || Number(product.sortOrder) || index + 1,
+    isHeroBanner: Boolean(product.isHeroBanner),
+    heroOrder: Number(product.heroOrder) || Number(product.sortOrder) || index + 1,
     status: product.status ?? "published",
     createdAt: product.createdAt || now,
     updatedAt: now

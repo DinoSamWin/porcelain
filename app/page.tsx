@@ -2,18 +2,22 @@ import { ArrowRight, HeartHandshake, ImageUp, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
-import { getProductById, homeContent, products } from "@/data/catalog";
+import { homeContent, products } from "@/data/catalog";
 import { getAvailabilityShortLabel } from "@/lib/catalog-options";
 
-const featuredProducts = homeContent.featuredProductIds
-  .map((id) => getProductById(id))
-  .filter((product): product is NonNullable<typeof product> => Boolean(product));
+const featuredProducts = products
+  .filter((product) => product.isFeatured)
+  .sort((a, b) => (a.featuredOrder ?? a.sortOrder) - (b.featuredOrder ?? b.sortOrder));
+
+const heroProducts = products
+  .filter((product) => product.isHeroBanner)
+  .sort((a, b) => (a.heroOrder ?? a.sortOrder) - (b.heroOrder ?? b.sortOrder));
 
 const displayProducts = [...products].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export default function HomePage() {
-  const heroProduct = featuredProducts[0];
-  const heroImage = homeContent.hero.image || heroProduct?.images[0]?.src;
+  const heroProduct = heroProducts[0] ?? featuredProducts[0] ?? displayProducts[0];
+  const heroImage = heroProduct?.images[0]?.src || homeContent.hero.image;
   const heroImageAlt = heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
 
   return (

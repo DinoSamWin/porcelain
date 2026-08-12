@@ -122,6 +122,10 @@ export function AdminContentManager() {
       packagingInfo: ["尺寸待确认", "包装待确认"],
       status: "published",
       sortOrder: index,
+      isFeatured: false,
+      featuredOrder: index,
+      isHeroBanner: false,
+      heroOrder: index,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -133,10 +137,7 @@ export function AdminContentManager() {
         hero: {
           ...current.homeContent.hero,
           image: current.homeContent.hero.image || src || ""
-        },
-        featuredProductIds: current.homeContent.featuredProductIds.length < 3
-          ? [...current.homeContent.featuredProductIds, id]
-          : current.homeContent.featuredProductIds
+        }
       },
       products: [...current.products, product]
     }));
@@ -163,21 +164,6 @@ export function AdminContentManager() {
       };
     });
     setSelectedProductId(content.products.find((product) => product.id !== productId)?.id ?? "");
-  }
-
-  function toggleFeatured(productId: string) {
-    setContent((current) => {
-      const exists = current.homeContent.featuredProductIds.includes(productId);
-      return {
-        ...current,
-        homeContent: {
-          ...current.homeContent,
-          featuredProductIds: exists
-            ? current.homeContent.featuredProductIds.filter((id) => id !== productId)
-            : [...current.homeContent.featuredProductIds, productId]
-        }
-      };
-    });
   }
 
   async function uploadImage(file: File, onUploaded: (src: string, alt: string) => void) {
@@ -211,13 +197,14 @@ export function AdminContentManager() {
     setBusy(true);
     setStatus("正在保存...");
     try {
+      const contentToSave = normalizePublishContent(content);
       const response = await fetch("/api/admin/content", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "x-admin-token": adminToken
         },
-        body: JSON.stringify(content)
+        body: JSON.stringify(contentToSave)
       });
       const result = await response.json();
 
@@ -226,6 +213,7 @@ export function AdminContentManager() {
       }
 
       setPublishMode(result.publishMode ?? publishMode);
+      setContent(contentToSave);
       setStatus(result.publishMode === "github" ? "已保存到 GitHub，Vercel 会自动发布" : "已保存到本地");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "保存失败");
@@ -336,19 +324,17 @@ export function AdminContentManager() {
                   )}
                   <span>
                     <strong>{product.name}</strong>
-                    <small>{product.sku}</small>
+                    <small>{getPublishSummary(product)}</small>
                   </span>
                 </button>
               ))}
             </aside>
 
             {selectedProduct ? (
-              <ProductSimpleEditor
+          <ProductSimpleEditor
                 product={selectedProduct}
-                isFeatured={content.homeContent.featuredProductIds.includes(selectedProduct.id)}
                 onChange={(patch) => updateProduct(selectedProduct.id, patch)}
                 onRemove={() => removeProduct(selectedProduct.id)}
-                onToggleFeatured={() => toggleFeatured(selectedProduct.id)}
                 onUpload={uploadImage}
               />
             ) : null}
@@ -359,19 +345,48 @@ export function AdminContentManager() {
   );
 }
 
+function getPublishSummary(product: Product) {
+  const places = [];
+  if (product.status === "published") places.push(`列表${product.sortOrder}`);
+  if (product.isFeatured) places.push(`推荐${product.featuredOrder ?? product.sortOrder}`);
+  if (product.isHeroBanner) places.push(`Banner${product.heroOrder ?? product.sortOrder}`);
+  return places.length > 0 ? places.join(" / ") : "未发布";
+}
+
+function normalizePublishContent(content: CatalogContent): CatalogContent {
+  const publishedProducts = content.products
+    .filter((product) => product.status === "published" && product.images[0]?.src)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const featuredProductIds = publishedProducts
+    .filter((product) => product.isFeatured)
+    .sort((a, b) => (a.featuredOrder ?? a.sortOrder) - (b.featuredOrder ?? b.sortOrder))
+    .map((product) => product.id);
+  const heroProduct = publishedProducts
+    .filter((product) => product.isHeroBanner)
+    .sort((a, b) => (a.heroOrder ?? a.sortOrder) - (b.heroOrder ?? b.sortOrder))[0];
+
+  return {
+    ...content,
+    homeContent: {
+      ...content.homeContent,
+      hero: {
+        ...content.homeContent.hero,
+        image: heroProduct?.images[0]?.src ?? content.homeContent.hero.image
+      },
+      featuredProductIds
+    }
+  };
+}
+
 function ProductSimpleEditor({
   product,
-  isFeatured,
   onChange,
   onRemove,
-  onToggleFeatured,
   onUpload
 }: {
   product: Product;
-  isFeatured: boolean;
   onChange: (patch: Partial<Product>) => void;
   onRemove: () => void;
-  onToggleFeatured: () => void;
   onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
 }) {
   const mainImage = product.images[0];
@@ -411,11 +426,62 @@ function ProductSimpleEditor({
             }}
           />
           <UploadButton label="追加详情图" multiple onUpload={appendGalleryImages} />
-          <label className="admin-simple-check">
-            <input checked={isFeatured} type="checkbox" onChange={onToggleFeatured} />
-            首页推荐
-          </label>
         </div>
+
+        <section className="admin-publish-box">
+          <div>
+            <span>发布位置</span>
+            <p>勾选要展示的位置，数字越小越靠前。</p>
+          </div>
+          <div className="admin-publish-grid">
+            <label className="admin-simple-check">
+              <input
+                checked={product.status === "published"}
+                type="checkbox"
+                onChange={(event) => onChange({ status: event.target.checked ? "published" : "draft" })}
+              />
+              商品列表 / 商品详情
+            </label>
+            <label>
+              列表顺序
+              <input min={1} type="number" value={product.sortOrder} onChange={(event) => onChange({ sortOrder: Number(event.target.value) })} />
+            </label>
+            <label className="admin-simple-check">
+              <input
+                checked={Boolean(product.isFeatured)}
+                type="checkbox"
+                onChange={(event) => onChange({ isFeatured: event.target.checked })}
+              />
+              首页推荐
+            </label>
+            <label>
+              推荐顺序
+              <input
+                min={1}
+                type="number"
+                value={product.featuredOrder ?? product.sortOrder}
+                onChange={(event) => onChange({ featuredOrder: Number(event.target.value) })}
+              />
+            </label>
+            <label className="admin-simple-check">
+              <input
+                checked={Boolean(product.isHeroBanner)}
+                type="checkbox"
+                onChange={(event) => onChange({ isHeroBanner: event.target.checked })}
+              />
+              首页 Banner
+            </label>
+            <label>
+              Banner 顺序
+              <input
+                min={1}
+                type="number"
+                value={product.heroOrder ?? product.sortOrder}
+                onChange={(event) => onChange({ heroOrder: Number(event.target.value) })}
+              />
+            </label>
+          </div>
+        </section>
 
         <label>
           商品名称
