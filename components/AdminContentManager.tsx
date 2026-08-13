@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, ImageUp, LogOut, Plus, Save, Trash2 } from "lucide-react";
+import { ExternalLink, ImageUp, LogOut, Maximize2, Plus, Save, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState, type ChangeEvent } from "react";
 import type { CatalogContent } from "@/data/catalog";
@@ -86,6 +86,7 @@ export function AdminContentManager() {
   const [status, setStatus] = useState("请输入后台密码登录");
   const [publishNotice, setPublishNotice] = useState("");
   const [localPreviews, setLocalPreviews] = useState<LocalPreview[]>([]);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const selectedProduct = useMemo(
@@ -371,27 +372,31 @@ export function AdminContentManager() {
           </div>
         ) : (
           <div className="admin-simple-grid">
-            <aside className="admin-simple-list">
-              {content.products.map((product) => (
-                <button
-                  className={selectedProduct?.id === product.id ? "is-active" : ""}
-                  key={product.id}
-                  type="button"
-                  onClick={() => setSelectedProductId(product.id)}
-                >
-                  {product.images[0]?.src ? (
-                    <span className="admin-simple-thumb">
-                      <AdminPreviewImage src={getPreviewSrc(product.images[0].src, localPreviews)} alt="" sizes="68px" />
+            <aside className="admin-simple-side">
+              <div className="admin-simple-list">
+                {content.products.map((product) => (
+                  <button
+                    className={selectedProduct?.id === product.id ? "is-active" : ""}
+                    key={product.id}
+                    type="button"
+                    onClick={() => setSelectedProductId(product.id)}
+                  >
+                    {product.images[0]?.src ? (
+                      <span className="admin-simple-thumb">
+                        <AdminPreviewImage src={getPreviewSrc(product.images[0].src, localPreviews)} alt="" sizes="68px" />
+                      </span>
+                    ) : (
+                      <span className="admin-simple-thumb">无图</span>
+                    )}
+                    <span>
+                      <strong>{product.name}</strong>
+                      <small>{getPublishSummary(product)}</small>
                     </span>
-                  ) : (
-                    <span className="admin-simple-thumb">无图</span>
-                  )}
-                  <span>
-                    <strong>{product.name}</strong>
-                    <small>{getPublishSummary(product)}</small>
-                  </span>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
+
+              <ProductImagePreview product={selectedProduct} localPreviews={localPreviews} onOpen={setLightboxImage} />
             </aside>
 
             {selectedProduct ? (
@@ -407,6 +412,8 @@ export function AdminContentManager() {
           </div>
         )}
       </section>
+
+      {lightboxImage ? <ImageLightbox image={lightboxImage} onClose={() => setLightboxImage(null)} /> : null}
     </main>
   );
 }
@@ -479,8 +486,6 @@ function ProductSimpleEditor({
   onRemove: () => void;
   onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
 }) {
-  const mainImage = product.images[0];
-
   function replaceMainImage(src: string, alt: string) {
     onChange({
       images: [{ src, alt: alt || product.name }, ...product.images.slice(1)]
@@ -500,139 +505,178 @@ function ProductSimpleEditor({
   }
 
   return (
-    <article className="admin-simple-editor">
-      <div className="admin-simple-preview">
-        {mainImage?.src ? <AdminPreviewImage src={getPreviewSrc(mainImage.src, localPreviews)} alt="" sizes="420px" /> : <span>暂无图片</span>}
+    <article className="admin-simple-form">
+      <div className="admin-simple-row">
+        <UploadButton
+          disabled={disabled}
+          label="替换主图"
+          onUpload={(files) => {
+            const file = files[0];
+            if (!file) return;
+            void onUpload(file, replaceMainImage);
+          }}
+        />
+        <UploadButton disabled={disabled} label="追加详情图" multiple onUpload={appendGalleryImages} />
       </div>
 
-      <div className="admin-simple-form">
-        <div className="admin-simple-row">
-          <UploadButton
-            disabled={disabled}
-            label="替换主图"
-            onUpload={(files) => {
-              const file = files[0];
-              if (!file) return;
-              void onUpload(file, replaceMainImage);
-            }}
-          />
-          <UploadButton disabled={disabled} label="追加详情图" multiple onUpload={appendGalleryImages} />
+      <section className="admin-publish-box">
+        <div>
+          <span>发布位置</span>
+          <p>勾选要展示的位置，数字越小越靠前。</p>
         </div>
-
-        <section className="admin-publish-box">
-          <div>
-            <span>发布位置</span>
-            <p>勾选要展示的位置，数字越小越靠前。</p>
-          </div>
-          <div className="admin-publish-grid">
-            <label className="admin-simple-check">
-              <input
-                checked={product.status === "published"}
-                type="checkbox"
-                onChange={(event) => onChange({ status: event.target.checked ? "published" : "draft" })}
-              />
-              商品列表 / 商品详情
-            </label>
-            <label>
-              列表顺序
-              <input min={1} type="number" value={product.sortOrder} onChange={(event) => onChange({ sortOrder: Number(event.target.value) })} />
-            </label>
-            <label className="admin-simple-check">
-              <input
-                checked={Boolean(product.isFeatured)}
-                type="checkbox"
-                onChange={(event) => onChange({ isFeatured: event.target.checked })}
-              />
-              首页推荐
-            </label>
-            <label>
-              推荐顺序
-              <input
-                min={1}
-                type="number"
-                value={product.featuredOrder ?? product.sortOrder}
-                onChange={(event) => onChange({ featuredOrder: Number(event.target.value) })}
-              />
-            </label>
-            <label className="admin-simple-check">
-              <input
-                checked={Boolean(product.isHeroBanner)}
-                type="checkbox"
-                onChange={(event) => onChange({ isHeroBanner: event.target.checked })}
-              />
-              首页 Banner
-            </label>
-            <label>
-              Banner 顺序
-              <input
-                min={1}
-                type="number"
-                value={product.heroOrder ?? product.sortOrder}
-                onChange={(event) => onChange({ heroOrder: Number(event.target.value) })}
-              />
-            </label>
-          </div>
-        </section>
-
-        <label>
-          商品名称
-          <input value={product.name} onChange={(event) => onChange({ name: event.target.value })} />
-        </label>
-
-        <div className="admin-simple-two">
-          <label>
-            商品编号
-            <input value={product.sku} onChange={(event) => onChange({ sku: event.target.value })} />
+        <div className="admin-publish-grid">
+          <label className="admin-simple-check">
+            <input
+              checked={product.status === "published"}
+              type="checkbox"
+              onChange={(event) => onChange({ status: event.target.checked ? "published" : "draft" })}
+            />
+            商品列表 / 商品详情
           </label>
           <label>
-            商品状态
-            <select value={product.availability} onChange={(event) => onChange({ availability: event.target.value as Product["availability"] })}>
-              {availabilityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {adminAvailabilityLabels[option.value]}
-                </option>
-              ))}
-            </select>
+            列表顺序
+            <input min={1} type="number" value={product.sortOrder} onChange={(event) => onChange({ sortOrder: Number(event.target.value) })} />
+          </label>
+          <label className="admin-simple-check">
+            <input
+              checked={Boolean(product.isFeatured)}
+              type="checkbox"
+              onChange={(event) => onChange({ isFeatured: event.target.checked })}
+            />
+            首页推荐
+          </label>
+          <label>
+            推荐顺序
+            <input
+              min={1}
+              type="number"
+              value={product.featuredOrder ?? product.sortOrder}
+              onChange={(event) => onChange({ featuredOrder: Number(event.target.value) })}
+            />
+          </label>
+          <label className="admin-simple-check">
+            <input
+              checked={Boolean(product.isHeroBanner)}
+              type="checkbox"
+              onChange={(event) => onChange({ isHeroBanner: event.target.checked })}
+            />
+            首页 Banner
+          </label>
+          <label>
+            Banner 顺序
+            <input
+              min={1}
+              type="number"
+              value={product.heroOrder ?? product.sortOrder}
+              onChange={(event) => onChange({ heroOrder: Number(event.target.value) })}
+            />
           </label>
         </div>
+      </section>
 
+      <label>
+        商品名称
+        <input value={product.name} onChange={(event) => onChange({ name: event.target.value })} />
+      </label>
+
+      <div className="admin-simple-two">
         <label>
-          商品材质
-          <input value={product.material} onChange={(event) => onChange({ material: event.target.value })} />
+          商品编号
+          <input value={product.sku} onChange={(event) => onChange({ sku: event.target.value })} />
         </label>
-
         <label>
-          商品分类
-          <input value={product.tags[0] ?? ""} onChange={(event) => onChange({ tags: [event.target.value] })} placeholder="例如：香炉 / 花器 / 摆件" />
-        </label>
-
-        <label>
-          简短说明
-          <textarea value={product.description} onChange={(event) => onChange({ description: event.target.value })} />
-        </label>
-
-        {product.images.length > 1 ? (
-          <div className="admin-simple-gallery">
-            {product.images.slice(1).map((image, index) => (
-              <div key={`${image.src}-${index}`}>
-                <AdminPreviewImage src={getPreviewSrc(image.src, localPreviews)} alt="" sizes="96px" />
-                <button
-                  type="button"
-                  onClick={() => onChange({ images: product.images.filter((_, imageIndex) => imageIndex !== index + 1) })}
-                >
-                  删除
-                </button>
-              </div>
+          商品状态
+          <select value={product.availability} onChange={(event) => onChange({ availability: event.target.value as Product["availability"] })}>
+            {availabilityOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {adminAvailabilityLabels[option.value]}
+              </option>
             ))}
-          </div>
-        ) : null}
-
-        <button className="btn btn-secondary danger-button" type="button" onClick={onRemove}>
-          <Trash2 size={16} aria-hidden="true" />
-          删除商品
-        </button>
+          </select>
+        </label>
       </div>
+
+      <label>
+        商品材质
+        <input value={product.material} onChange={(event) => onChange({ material: event.target.value })} />
+      </label>
+
+      <label>
+        商品分类
+        <input value={product.tags[0] ?? ""} onChange={(event) => onChange({ tags: [event.target.value] })} placeholder="例如：香炉 / 花器 / 摆件" />
+      </label>
+
+      <label>
+        简短说明
+        <textarea value={product.description} onChange={(event) => onChange({ description: event.target.value })} />
+      </label>
+
+      {product.images.length > 1 ? (
+        <div className="admin-simple-gallery">
+          {product.images.slice(1).map((image, index) => (
+            <div key={`${image.src}-${index}`}>
+              <AdminPreviewImage src={getPreviewSrc(image.src, localPreviews)} alt="" sizes="96px" />
+              <button
+                type="button"
+                onClick={() => onChange({ images: product.images.filter((_, imageIndex) => imageIndex !== index + 1) })}
+              >
+                删除
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <button className="btn btn-secondary danger-button" type="button" onClick={onRemove}>
+        <Trash2 size={16} aria-hidden="true" />
+        删除商品
+      </button>
     </article>
+  );
+}
+
+function ProductImagePreview({
+  product,
+  localPreviews,
+  onOpen
+}: {
+  product: Product | undefined;
+  localPreviews: LocalPreview[];
+  onOpen: (image: { src: string; alt: string }) => void;
+}) {
+  const image = product?.images[0];
+  const previewSrc = image?.src ? getPreviewSrc(image.src, localPreviews) : "";
+
+  return (
+    <section className="admin-left-preview">
+      <div>
+        <span>主图预览</span>
+        {previewSrc ? (
+          <button type="button" onClick={() => onOpen({ src: previewSrc, alt: image?.alt || product?.name || "商品图片" })}>
+            <Maximize2 size={15} aria-hidden="true" />
+            放大
+          </button>
+        ) : null}
+      </div>
+      <div className="admin-left-preview__image">
+        {previewSrc ? <AdminPreviewImage src={previewSrc} alt={image?.alt || product?.name || ""} sizes="290px" /> : <span>暂无图片</span>}
+      </div>
+    </section>
+  );
+}
+
+function ImageLightbox({ image, onClose }: { image: { src: string; alt: string }; onClose: () => void }) {
+  return (
+    <div className="admin-lightbox" role="dialog" aria-modal="true" aria-label="图片预览">
+      <button className="admin-lightbox__backdrop" type="button" aria-label="关闭图片预览" onClick={onClose} />
+      <div className="admin-lightbox__panel">
+        <button className="admin-lightbox__close" type="button" onClick={onClose}>
+          <X size={18} aria-hidden="true" />
+          <span className="sr-only">关闭</span>
+        </button>
+        <AdminPreviewImage src={image.src} alt={image.alt} sizes="90vw" />
+      </div>
+    </div>
   );
 }
 
