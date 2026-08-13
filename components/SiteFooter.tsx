@@ -43,7 +43,6 @@ export function SiteFooter() {
           <Link href="/products">Browse Pieces</Link>
           <Link href="/cart">Saved Interest</Link>
           <Link href="/request-quote">Leave Contact</Link>
-          <Link href="/admin">Catalog Admin</Link>
         </div>
 
         <div>
