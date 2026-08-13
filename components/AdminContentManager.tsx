@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageUp, LogOut, Plus, Save, Trash2 } from "lucide-react";
+import { ExternalLink, ImageUp, LogOut, Plus, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState, type ChangeEvent } from "react";
 import type { CatalogContent } from "@/data/catalog";
@@ -16,6 +16,11 @@ interface RuntimeStatus {
   branch?: string;
   isOnlineRuntime?: boolean;
   canPublishOnline: boolean;
+}
+
+interface LocalPreview {
+  remoteSrc: string;
+  previewSrc: string;
 }
 
 const emptyContent: CatalogContent = {
@@ -79,6 +84,8 @@ export function AdminContentManager() {
   const [runtime, setRuntime] = useState<RuntimeStatus | null>(null);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [status, setStatus] = useState("请输入后台密码登录");
+  const [publishNotice, setPublishNotice] = useState("");
+  const [localPreviews, setLocalPreviews] = useState<LocalPreview[]>([]);
   const [busy, setBusy] = useState(false);
 
   const selectedProduct = useMemo(
@@ -106,6 +113,7 @@ export function AdminContentManager() {
       setSelectedProductId(result.content?.products?.[0]?.id ?? "");
       setLoggedIn(true);
       setStatus(getRuntimeStatusText(result.runtime) ?? "已登录，可以上传商品");
+      setPublishNotice("");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "登录失败");
     } finally {
@@ -188,7 +196,9 @@ export function AdminContentManager() {
   async function uploadImage(file: File, onUploaded: (src: string, alt: string) => void) {
     setBusy(true);
     setStatus("正在上传图片...");
+    setPublishNotice("");
     try {
+      const previewSrc = URL.createObjectURL(file);
       const formData = new FormData();
       formData.append("file", file);
       const response = await fetch("/api/admin/upload", {
@@ -204,8 +214,9 @@ export function AdminContentManager() {
       }
 
       onUploaded(result.src, result.alt);
+      setLocalPreviews((current) => [...current.filter((preview) => preview.remoteSrc !== result.src), { remoteSrc: result.src, previewSrc }]);
       setPublishMode(result.publishMode ?? publishMode);
-      setStatus("图片已上传，记得点保存发布");
+      setStatus("图片已上传，预览先显示本地图片；点保存发布后会进入线上发布流程");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "上传失败");
     } finally {
@@ -216,6 +227,7 @@ export function AdminContentManager() {
   async function saveContent() {
     setBusy(true);
     setStatus("正在保存...");
+    setPublishNotice("");
     try {
       const contentToSave = normalizePublishContent(content);
       const response = await fetch("/api/admin/content", {
@@ -236,6 +248,11 @@ export function AdminContentManager() {
       setPublishMode(result.publishMode ?? publishMode);
       setContent(contentToSave);
       setStatus(result.publishMode === "github" ? "已保存到 GitHub，Vercel 会自动发布" : "已保存到本地");
+      setPublishNotice(
+        result.publishMode === "github"
+          ? "发布成功：内容已经写入 GitHub。Vercel 通常会在 1-3 分钟内完成部署，部署完成后前台会显示最新商品。"
+          : "保存成功：本地预览已更新。"
+      );
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "保存失败");
     } finally {
@@ -309,6 +326,27 @@ export function AdminContentManager() {
         <div className="admin-simple-status">
           <span>{getPublishModeLabel(publishMode, runtime)}</span>
           <p>{status}</p>
+          {publishNotice ? (
+            <div className="admin-publish-notice">
+              <p>{publishNotice}</p>
+              <div>
+                <a href="/products" target="_blank" rel="noreferrer">
+                  <ExternalLink size={14} aria-hidden="true" />
+                  查看前台商品列表
+                </a>
+                {selectedProduct?.slug ? (
+                  <a href={`/products/${selectedProduct.slug}`} target="_blank" rel="noreferrer">
+                    <ExternalLink size={14} aria-hidden="true" />
+                    查看当前商品详情
+                  </a>
+                ) : null}
+                <a href="https://github.com/DinoSamWin/porcelain/commits/main/" target="_blank" rel="noreferrer">
+                  <ExternalLink size={14} aria-hidden="true" />
+                  查看 GitHub 提交记录
+                </a>
+              </div>
+            </div>
+          ) : null}
           {runtime?.canPublishOnline === false ? (
             <p className="admin-runtime-warning">
               {getRuntimeStatusText(runtime)}配置完成后需要在 Vercel 重新部署。
@@ -343,7 +381,7 @@ export function AdminContentManager() {
                 >
                   {product.images[0]?.src ? (
                     <span className="admin-simple-thumb">
-                      <Image src={product.images[0].src} alt="" fill unoptimized sizes="68px" />
+                      <AdminPreviewImage src={getPreviewSrc(product.images[0].src, localPreviews)} alt="" sizes="68px" />
                     </span>
                   ) : (
                     <span className="admin-simple-thumb">无图</span>
@@ -357,8 +395,9 @@ export function AdminContentManager() {
             </aside>
 
             {selectedProduct ? (
-          <ProductSimpleEditor
-              product={selectedProduct}
+              <ProductSimpleEditor
+                product={selectedProduct}
+                localPreviews={localPreviews}
                 disabled={busy || publishingBlocked}
                 onChange={(patch) => updateProduct(selectedProduct.id, patch)}
                 onRemove={() => removeProduct(selectedProduct.id)}
@@ -427,12 +466,14 @@ function normalizePublishContent(content: CatalogContent): CatalogContent {
 
 function ProductSimpleEditor({
   product,
+  localPreviews,
   disabled = false,
   onChange,
   onRemove,
   onUpload
 }: {
   product: Product;
+  localPreviews: LocalPreview[];
   disabled?: boolean;
   onChange: (patch: Partial<Product>) => void;
   onRemove: () => void;
@@ -461,7 +502,7 @@ function ProductSimpleEditor({
   return (
     <article className="admin-simple-editor">
       <div className="admin-simple-preview">
-        {mainImage?.src ? <Image src={mainImage.src} alt="" fill unoptimized sizes="420px" /> : <span>暂无图片</span>}
+        {mainImage?.src ? <AdminPreviewImage src={getPreviewSrc(mainImage.src, localPreviews)} alt="" sizes="420px" /> : <span>暂无图片</span>}
       </div>
 
       <div className="admin-simple-form">
@@ -574,7 +615,7 @@ function ProductSimpleEditor({
           <div className="admin-simple-gallery">
             {product.images.slice(1).map((image, index) => (
               <div key={`${image.src}-${index}`}>
-                <Image src={image.src} alt="" fill unoptimized sizes="96px" />
+                <AdminPreviewImage src={getPreviewSrc(image.src, localPreviews)} alt="" sizes="96px" />
                 <button
                   type="button"
                   onClick={() => onChange({ images: product.images.filter((_, imageIndex) => imageIndex !== index + 1) })}
@@ -593,6 +634,18 @@ function ProductSimpleEditor({
       </div>
     </article>
   );
+}
+
+function getPreviewSrc(remoteSrc: string, localPreviews: LocalPreview[]) {
+  return localPreviews.find((preview) => preview.remoteSrc === remoteSrc)?.previewSrc ?? remoteSrc;
+}
+
+function AdminPreviewImage({ src, alt, sizes }: { src: string; alt: string; sizes: string }) {
+  if (src.startsWith("blob:")) {
+    return <img src={src} alt={alt} />;
+  }
+
+  return <Image src={src} alt={alt} fill unoptimized sizes={sizes} />;
 }
 
 function UploadButton({
