@@ -5,7 +5,7 @@
       "subtitle": "Selected enamel porcelain pieces.",
       "primaryCta": "Explore",
       "secondaryCta": "Contact",
-      "image": ""
+      "image": "/uploads/1786619550547-c3bec711-2e68-429e-b2ef-390da9015af9.png"
     },
     "sellingPoints": [],
     "featuredCategoryIds": [
@@ -38,5 +38,61 @@
       ]
     }
   ],
-  "products": []
+  "products": [
+    {
+      "id": "prod-1786619552837",
+      "slug": "product-1",
+      "name": "新商品 1",
+      "sku": "SKU-001",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "待填写",
+      "color": "待填写",
+      "finish": "待填写",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "商品展示"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "新品"
+      ],
+      "description": "待填写",
+      "images": [
+        {
+          "src": "/uploads/1786619550547-c3bec711-2e68-429e-b2ef-390da9015af9.png",
+          "alt": "c3bec711 2e68 429e b2ef 390da9015af9"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 1,
+      "isFeatured": false,
+      "featuredOrder": 1,
+      "isHeroBanner": false,
+      "heroOrder": 1,
+      "createdAt": "2026-08-13T11:12:32.837Z",
+      "updatedAt": "2026-08-13T11:13:16.785Z"
+    }
+  ]
 }
