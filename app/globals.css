@@ -2885,7 +2885,10 @@ textarea:focus {
   min-height: 100svh;
   place-items: center;
   padding: 24px;
-  background: #f8f6f1;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(116, 141, 255, 0.18), transparent 30%),
+    radial-gradient(circle at 82% 0%, rgba(231, 172, 255, 0.26), transparent 31%),
+    linear-gradient(135deg, #f6f8ff 0%, #fbf7ff 44%, #f8fbff 100%);
 }
 
 .admin-minimal-page--wide {
@@ -2896,8 +2899,11 @@ textarea:focus {
 .admin-login-card,
 .admin-simple-shell {
   width: min(100%, 520px);
-  border: 1px solid var(--line);
-  background: var(--white);
+  border: 1px solid rgba(121, 133, 214, 0.2);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 24px 80px rgba(57, 67, 141, 0.14);
+  backdrop-filter: blur(20px);
 }
 
 .admin-login-card {
@@ -2906,21 +2912,68 @@ textarea:focus {
   padding: 34px;
 }
 
+.admin-minimal-page .btn,
+.admin-minimal-page .icon-button {
+  border-radius: 12px;
+  text-transform: none;
+}
+
+.admin-minimal-page .btn-primary {
+  border-color: #5360ff;
+  background: linear-gradient(135deg, #5360ff, #7c4dff);
+  box-shadow: 0 12px 26px rgba(83, 96, 255, 0.22);
+}
+
+.admin-minimal-page .btn-secondary {
+  border-color: rgba(83, 96, 255, 0.26);
+  color: #252a65;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.admin-minimal-page .icon-button {
+  border-color: rgba(83, 96, 255, 0.2);
+  color: #252a65;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.admin-minimal-page label {
+  color: #565a78;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-minimal-page input,
+.admin-minimal-page select,
+.admin-minimal-page textarea {
+  border-color: rgba(121, 133, 214, 0.22);
+  border-radius: 12px;
+  color: #171a33;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.admin-minimal-page input:focus,
+.admin-minimal-page select:focus,
+.admin-minimal-page textarea:focus {
+  border-color: rgba(83, 96, 255, 0.68);
+  box-shadow: 0 0 0 4px rgba(83, 96, 255, 0.12);
+}
+
 .admin-login-card > span,
 .admin-simple-header span,
 .admin-simple-status span {
-  color: var(--gold);
+  color: #5360ff;
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .admin-login-card h1,
 .admin-simple-header h1,
 .admin-empty-uploader h2 {
   margin: 0;
-  font-family: var(--serif);
-  font-weight: 400;
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .admin-login-card h1 {
@@ -2931,7 +2984,7 @@ textarea:focus {
 .admin-simple-status p,
 .admin-empty-uploader p {
   margin: 0;
-  color: var(--muted);
+  color: #6f7190;
 }
 
 .admin-login-card__status {
@@ -2953,7 +3006,7 @@ textarea:focus {
   justify-content: space-between;
   gap: 18px;
   padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(121, 133, 214, 0.18);
 }
 
 .admin-simple-header h1 {
@@ -2975,12 +3028,17 @@ textarea:focus {
   gap: 8px;
   min-height: 40px;
   padding: 0 18px;
-  border: 1px solid var(--green);
+  border: 1px solid #5360ff;
+  border-radius: 12px;
   color: var(--white);
-  background: var(--green);
+  background: linear-gradient(135deg, #5360ff, #7c4dff);
+  box-shadow: 0 12px 26px rgba(83, 96, 255, 0.22);
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
+}
+
+.admin-minimal-page .admin-simple-upload {
+  color: var(--white);
 }
 
 .admin-simple-upload input {
@@ -2997,8 +3055,9 @@ textarea:focus {
 
 .admin-simple-status {
   padding: 13px 14px;
-  border: 1px solid var(--line);
-  background: #fbfaf6;
+  border: 1px solid rgba(121, 133, 214, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
 }
 
 .admin-runtime-warning {
@@ -3025,8 +3084,10 @@ textarea:focus {
   gap: 6px;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--line-dark);
-  color: var(--green);
+  border: 1px solid rgba(83, 96, 255, 0.24);
+  border-radius: 10px;
+  color: #5360ff;
+  background: rgba(255, 255, 255, 0.72);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -3038,12 +3099,14 @@ textarea:focus {
   gap: 14px;
   min-height: 360px;
   padding: 48px 24px;
-  border: 1px dashed var(--line-dark);
+  border: 1px dashed rgba(83, 96, 255, 0.36);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.42);
   text-align: center;
 }
 
 .admin-empty-uploader svg {
-  color: var(--gold);
+  color: #5360ff;
 }
 
 .admin-simple-grid {
@@ -3071,15 +3134,17 @@ textarea:focus {
   align-items: center;
   min-height: 82px;
   padding: 8px;
-  border: 1px solid var(--line);
-  background: transparent;
+  border: 1px solid rgba(121, 133, 214, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.56);
   color: var(--ink);
   text-align: left;
+  box-shadow: 0 10px 26px rgba(57, 67, 141, 0.06);
 }
 
 .admin-simple-list button.is-active {
-  border-color: var(--green);
-  background: #f4f0e8;
+  border-color: rgba(83, 96, 255, 0.62);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(238, 241, 255, 0.82));
 }
 
 .admin-simple-list strong,
@@ -3099,7 +3164,8 @@ textarea:focus {
   overflow: hidden;
   width: 68px;
   aspect-ratio: 1;
-  background: var(--paper-deep);
+  border-radius: 12px;
+  background: #eef1ff;
   color: var(--faint);
   font-size: 12px;
 }
@@ -3125,7 +3191,7 @@ textarea:focus {
 }
 
 .admin-left-preview span {
-  color: var(--gold);
+  color: #5360ff;
   font-size: 12px;
   font-weight: 700;
 }
@@ -3136,9 +3202,10 @@ textarea:focus {
   gap: 6px;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--line-dark);
-  color: var(--green);
-  background: transparent;
+  border: 1px solid rgba(83, 96, 255, 0.26);
+  border-radius: 10px;
+  color: #5360ff;
+  background: rgba(255, 255, 255, 0.72);
   font-size: 12px;
   font-weight: 700;
 }
@@ -3150,8 +3217,10 @@ textarea:focus {
   overflow: hidden;
   min-height: 210px;
   aspect-ratio: 4 / 5;
-  border: 1px solid var(--line);
-  background: var(--paper-deep);
+  border: 1px solid rgba(121, 133, 214, 0.18);
+  border-radius: 20px;
+  background: #eef1ff;
+  box-shadow: 0 16px 42px rgba(57, 67, 141, 0.1);
   color: var(--faint);
 }
 
@@ -3165,12 +3234,13 @@ textarea:focus {
   display: grid;
   gap: 12px;
   padding: 16px;
-  border: 1px solid var(--line);
-  background: #fbfaf6;
+  border: 1px solid rgba(121, 133, 214, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
 }
 
 .admin-publish-box span {
-  color: var(--gold);
+  color: #5360ff;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -3178,7 +3248,7 @@ textarea:focus {
 
 .admin-publish-box p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: #6f7190;
   font-size: 13px;
 }
 
@@ -3217,7 +3287,8 @@ textarea:focus {
   position: relative;
   overflow: hidden;
   aspect-ratio: 1;
-  background: var(--paper-deep);
+  border-radius: 14px;
+  background: #eef1ff;
 }
 
 .admin-simple-gallery button {
@@ -3252,7 +3323,8 @@ textarea:focus {
   overflow: hidden;
   width: min(92vw, 980px);
   height: min(86vh, 820px);
-  background: var(--paper-deep);
+  border-radius: 24px;
+  background: #eef1ff;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
 }
 
