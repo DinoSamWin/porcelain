@@ -2,7 +2,7 @@
 
 import { ExternalLink, ImageUp, LogOut, Maximize2, Plus, Save, Trash2, X } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import type { CatalogContent } from "@/data/catalog";
 import { availabilityOptions } from "@/lib/catalog-options";
 import type { Product } from "@/types/domain";
@@ -76,6 +76,8 @@ const adminAvailabilityLabels: Record<Product["availability"], string> = {
   "waiting-list": "需等待"
 };
 
+const adminTokenStorageKey = "aurelia-admin-token";
+
 const imageSizeGuides = [
   {
     title: "商品主图 / 首页推荐 / 商品列表",
@@ -118,12 +120,24 @@ export function AdminContentManager() {
   );
   const publishingBlocked = Boolean(runtime && !runtime.canPublishOnline);
 
+  useEffect(() => {
+    const savedToken = window.localStorage.getItem(adminTokenStorageKey);
+    if (!savedToken) return;
+
+    setAdminToken(savedToken);
+    void loginWithToken(savedToken, { remember: false, restoring: true });
+  }, []);
+
   async function login() {
+    await loginWithToken(adminToken, { remember: true });
+  }
+
+  async function loginWithToken(token: string, { remember, restoring = false }: { remember: boolean; restoring?: boolean }) {
     setBusy(true);
-    setStatus("正在登录...");
+    setStatus(restoring ? "正在恢复登录..." : "正在登录...");
     try {
       const response = await fetch("/api/admin/content", {
-        headers: { "x-admin-token": adminToken }
+        headers: { "x-admin-token": token }
       });
       const result = await response.json();
 
@@ -138,7 +152,13 @@ export function AdminContentManager() {
       setLoggedIn(true);
       setStatus(getRuntimeStatusText(result.runtime) ?? "已登录，可以上传商品");
       setPublishNotice("");
+      if (remember) {
+        window.localStorage.setItem(adminTokenStorageKey, token);
+      }
     } catch (error) {
+      if (restoring) {
+        window.localStorage.removeItem(adminTokenStorageKey);
+      }
       setStatus(error instanceof Error ? error.message : "登录失败");
     } finally {
       setBusy(false);
@@ -353,7 +373,16 @@ export function AdminContentManager() {
               <Save size={16} aria-hidden="true" />
               保存发布
             </button>
-            <button className="icon-button" type="button" onClick={() => setLoggedIn(false)}>
+            <button
+              className="icon-button"
+              type="button"
+              onClick={() => {
+                window.localStorage.removeItem(adminTokenStorageKey);
+                setLoggedIn(false);
+                setAdminToken("");
+                setStatus("请输入后台密码登录");
+              }}
+            >
               <LogOut size={16} aria-hidden="true" />
               <span className="sr-only">退出</span>
             </button>
