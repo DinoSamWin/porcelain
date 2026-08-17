@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { assertAdminAccess, getAdminRuntimeStatus, getPublishMode, readCatalogContent, writeCatalogContent } from "@/lib/content-admin";
+import {
+  assertAdminAccess,
+  getAdminRuntimeStatus,
+  getPublishMode,
+  readCatalogContent,
+  triggerVercelDeployHook,
+  writeCatalogContent
+} from "@/lib/content-admin";
 
 export async function GET(request: Request) {
   try {
@@ -26,7 +33,8 @@ export async function PUT(request: Request) {
     assertAdminAccess(request);
     const content = await request.json();
     await writeCatalogContent(content);
-    return NextResponse.json({ ok: true, publishMode: getPublishMode(), runtime: getAdminRuntimeStatus() });
+    const deployHook = await triggerVercelDeployHook();
+    return NextResponse.json({ ok: true, publishMode: getPublishMode(), runtime: getAdminRuntimeStatus(), deployHook });
   } catch (error) {
     return NextResponse.json(
       {

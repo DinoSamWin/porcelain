@@ -23,6 +23,12 @@ interface LocalPreview {
   previewSrc: string;
 }
 
+interface DeployHookResult {
+  configured: boolean;
+  ok?: boolean;
+  error?: string;
+}
+
 const emptyContent: CatalogContent = {
   homeContent: {
     hero: {
@@ -284,12 +290,9 @@ export function AdminContentManager() {
 
       setPublishMode(result.publishMode ?? publishMode);
       setContent(contentToSave);
-      setStatus(result.publishMode === "github" ? "已保存到 GitHub，Vercel 会自动发布" : "已保存到本地");
-      setPublishNotice(
-        result.publishMode === "github"
-          ? "发布成功：内容已经写入 GitHub。Vercel 通常会在 1-3 分钟内完成部署，部署完成后前台会显示最新商品。"
-          : "保存成功：本地预览已更新。"
-      );
+      const deployHook = result.deployHook as DeployHookResult | undefined;
+      setStatus(getSaveStatusText(result.publishMode, deployHook));
+      setPublishNotice(getSaveNoticeText(result.publishMode, deployHook));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "保存失败");
     } finally {
@@ -515,6 +518,38 @@ function getRuntimeStatusText(runtime?: RuntimeStatus | null) {
   }
 
   return `线上发布配置缺失或错误：${problems.join("、")}。`;
+}
+
+function getSaveStatusText(publishMode: PublishMode, deployHook?: DeployHookResult) {
+  if (publishMode !== "github") {
+    return "已保存到本地";
+  }
+
+  if (deployHook?.ok) {
+    return "已保存到 GitHub，并已通知 Vercel 部署";
+  }
+
+  if (deployHook?.configured && deployHook.ok === false) {
+    return "已保存到 GitHub，但 Vercel 部署触发失败";
+  }
+
+  return "已保存到 GitHub，等待 Vercel 部署";
+}
+
+function getSaveNoticeText(publishMode: PublishMode, deployHook?: DeployHookResult) {
+  if (publishMode !== "github") {
+    return "保存成功：本地预览已更新。";
+  }
+
+  if (deployHook?.ok) {
+    return "发布成功：内容已经写入 GitHub，并已通知 Vercel 开始生产部署。通常 1-3 分钟后前台会显示最新内容。";
+  }
+
+  if (deployHook?.configured && deployHook.ok === false) {
+    return `内容已经写入 GitHub，但 Vercel Deploy Hook 触发失败：${deployHook.error ?? "请检查 Hook URL 是否正确。"}`;
+  }
+
+  return "内容已经写入 GitHub。当前还没有配置 VERCEL_DEPLOY_HOOK_URL，需要 Vercel 自动部署正常工作，或者在 Vercel 里创建 Deploy Hook 后配置到环境变量。";
 }
 
 function normalizePublishContent(content: CatalogContent): CatalogContent {

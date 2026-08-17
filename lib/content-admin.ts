@@ -17,6 +17,12 @@ interface ImageUploadPayload {
   buffer: Buffer;
 }
 
+export interface DeployHookResult {
+  configured: boolean;
+  ok?: boolean;
+  error?: string;
+}
+
 export async function readCatalogContent() {
   const github = getGitHubConfig();
 
@@ -65,6 +71,38 @@ export async function saveUploadedImage({ fileName, buffer }: ImageUploadPayload
   await fs.mkdir(uploadDirPath, { recursive: true });
   await fs.writeFile(path.join(uploadDirPath, fileName), buffer);
   return publicPath;
+}
+
+export async function triggerVercelDeployHook(): Promise<DeployHookResult> {
+  const deployHookUrl = process.env.VERCEL_DEPLOY_HOOK_URL;
+
+  if (!deployHookUrl) {
+    return { configured: false };
+  }
+
+  try {
+    const response = await fetch(deployHookUrl, {
+      method: "POST",
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      return {
+        configured: true,
+        ok: false,
+        error: `Vercel Deploy Hook 返回 ${response.status}${body ? `：${body}` : ""}`
+      };
+    }
+
+    return { configured: true, ok: true };
+  } catch (error) {
+    return {
+      configured: true,
+      ok: false,
+      error: error instanceof Error ? error.message : "触发 Vercel Deploy Hook 失败。"
+    };
+  }
 }
 
 export function normalizeCatalogContent(content: CatalogContent): CatalogContent {
