@@ -76,6 +76,29 @@ const adminAvailabilityLabels: Record<Product["availability"], string> = {
   "waiting-list": "需等待"
 };
 
+const imageSizeGuides = [
+  {
+    title: "商品主图 / 首页推荐 / 商品列表",
+    size: "1600 x 2000 px",
+    note: "4:5 竖图，主体完整居中，四周留 8%-12% 呼吸空间。"
+  },
+  {
+    title: "商品详情图",
+    size: "2000 x 2500 px",
+    note: "4:5 竖图或 2000 x 2000 px 方图，用于细节、侧面、局部特写。"
+  },
+  {
+    title: "首页 Banner 桌面图",
+    size: "2880 x 1400 px",
+    note: "约 2:1 横图，主体放在右侧或中间偏右，左侧保留文字安全区。"
+  },
+  {
+    title: "首页 Banner 移动图",
+    size: "1600 x 2200 px",
+    note: "竖图，主体居中偏上，底部避免重要信息被按钮遮挡。"
+  }
+];
+
 export function AdminContentManager() {
   const [adminToken, setAdminToken] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
@@ -160,13 +183,6 @@ export function AdminContentManager() {
 
     setContent((current) => ({
       ...current,
-      homeContent: {
-        ...current.homeContent,
-        hero: {
-          ...current.homeContent.hero,
-          image: current.homeContent.hero.image || src || ""
-        }
-      },
       products: [...current.products, product]
     }));
     setSelectedProductId(id);
@@ -292,8 +308,28 @@ export function AdminContentManager() {
   }
 
   return (
-    <main className="admin-minimal-page admin-minimal-page--wide">
-      <section className="admin-simple-shell">
+    <main className="admin-dashboard-page">
+      <aside className="admin-dashboard-sidebar">
+        <div className="admin-dashboard-brand">
+          <span>AC</span>
+          <div>
+            <strong>Aurelia CMS</strong>
+            <small>Catalog Admin</small>
+          </div>
+        </div>
+        <nav aria-label="后台导航">
+          <a href="#catalog">商品管理</a>
+          <a href="#assets">素材规范</a>
+          <a href="#publish">发布设置</a>
+        </nav>
+        <div className="admin-dashboard-help">
+          <span>当前模式</span>
+          <strong>{getPublishModeLabel(publishMode, runtime)}</strong>
+          <p>商品主图、详情图和 Banner 图分开管理。</p>
+        </div>
+      </aside>
+
+      <section className="admin-dashboard-main">
         <header className="admin-simple-header">
           <div>
             <span>商品后台</span>
@@ -355,6 +391,10 @@ export function AdminContentManager() {
           ) : null}
         </div>
 
+        <div id="assets">
+          <ImageSizeGuide />
+        </div>
+
         {content.products.length === 0 ? (
           <div className="admin-empty-uploader">
             <ImageUp size={34} aria-hidden="true" />
@@ -371,7 +411,7 @@ export function AdminContentManager() {
             />
           </div>
         ) : (
-          <div className="admin-simple-grid">
+          <div className="admin-simple-grid" id="catalog">
             <aside className="admin-simple-side">
               <div className="admin-simple-list">
                 {content.products.map((product) => (
@@ -400,6 +440,7 @@ export function AdminContentManager() {
             </aside>
 
             {selectedProduct ? (
+              <div id="publish">
               <ProductSimpleEditor
                 product={selectedProduct}
                 localPreviews={localPreviews}
@@ -408,6 +449,7 @@ export function AdminContentManager() {
                 onRemove={() => removeProduct(selectedProduct.id)}
                 onUpload={uploadImage}
               />
+              </div>
             ) : null}
           </div>
         )}
@@ -422,7 +464,7 @@ function getPublishSummary(product: Product) {
   const places = [];
   if (product.status === "published") places.push(`列表${product.sortOrder}`);
   if (product.isFeatured) places.push(`推荐${product.featuredOrder ?? product.sortOrder}`);
-  if (product.isHeroBanner) places.push(`Banner${product.heroOrder ?? product.sortOrder}`);
+  if (product.isHeroBanner) places.push(product.bannerImage?.src ? `Banner${product.heroOrder ?? product.sortOrder}` : "Banner待补图");
   return places.length > 0 ? places.join(" / ") : "未发布";
 }
 
@@ -456,6 +498,7 @@ function normalizePublishContent(content: CatalogContent): CatalogContent {
     .map((product) => product.id);
   const heroProduct = publishedProducts
     .filter((product) => product.isHeroBanner)
+    .filter((product) => product.bannerImage?.src)
     .sort((a, b) => (a.heroOrder ?? a.sortOrder) - (b.heroOrder ?? b.sortOrder))[0];
 
   return {
@@ -464,7 +507,7 @@ function normalizePublishContent(content: CatalogContent): CatalogContent {
       ...content.homeContent,
       hero: {
         ...content.homeContent.hero,
-        image: heroProduct?.images[0]?.src ?? content.homeContent.hero.image
+        image: heroProduct?.bannerImage?.src ?? ""
       },
       featuredProductIds
     }
@@ -522,7 +565,7 @@ function ProductSimpleEditor({
       <section className="admin-publish-box">
         <div>
           <span>发布位置</span>
-          <p>勾选要展示的位置，数字越小越靠前。</p>
+          <p>商品主图只用于商品本身。勾选首页 Banner 后，请继续补充 Banner 专用尺寸素材。</p>
         </div>
         <div className="admin-publish-grid">
           <label className="admin-simple-check">
@@ -573,6 +616,16 @@ function ProductSimpleEditor({
           </label>
         </div>
       </section>
+
+      {product.isHeroBanner ? (
+        <BannerAssetPanel
+          product={product}
+          localPreviews={localPreviews}
+          disabled={disabled}
+          onChange={onChange}
+          onUpload={onUpload}
+        />
+      ) : null}
 
       <label>
         商品名称
@@ -631,6 +684,113 @@ function ProductSimpleEditor({
         <Trash2 size={16} aria-hidden="true" />
         删除商品
       </button>
+    </article>
+  );
+}
+
+function ImageSizeGuide() {
+  return (
+    <section className="admin-size-guide">
+      <div>
+        <span>素材尺寸规范</span>
+        <p>上传商品时先用商品主图；只有发布到首页 Banner 时，再额外补 Banner 专用图。</p>
+      </div>
+      <div className="admin-size-guide__grid">
+        {imageSizeGuides.map((item) => (
+          <article key={item.title}>
+            <strong>{item.title}</strong>
+            <span>{item.size}</span>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BannerAssetPanel({
+  product,
+  localPreviews,
+  disabled,
+  onChange,
+  onUpload
+}: {
+  product: Product;
+  localPreviews: LocalPreview[];
+  disabled: boolean;
+  onChange: (patch: Partial<Product>) => void;
+  onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
+}) {
+  const desktopSrc = product.bannerImage?.src ? getPreviewSrc(product.bannerImage.src, localPreviews) : "";
+  const mobileSrc = product.mobileBannerImage?.src ? getPreviewSrc(product.mobileBannerImage.src, localPreviews) : "";
+
+  return (
+    <section className="admin-banner-assets">
+      <div className="admin-banner-assets__heading">
+        <div>
+          <span>Banner 专用素材</span>
+          <p>这里上传的是首页 Banner 图片，不会替换商品主图。</p>
+        </div>
+      </div>
+      <div className="admin-banner-assets__grid">
+        <BannerAssetSlot
+          title="桌面 Banner"
+          size="2880 x 1400 px"
+          imageSrc={desktopSrc}
+          disabled={disabled}
+          uploadLabel={product.bannerImage?.src ? "替换桌面 Banner" : "上传桌面 Banner"}
+          onUpload={(file) => {
+            void onUpload(file, (src, alt) => onChange({ bannerImage: { src, alt: alt || `${product.name} desktop banner` } }));
+          }}
+        />
+        <BannerAssetSlot
+          title="移动 Banner"
+          size="1600 x 2200 px"
+          imageSrc={mobileSrc}
+          disabled={disabled}
+          uploadLabel={product.mobileBannerImage?.src ? "替换移动 Banner" : "上传移动 Banner"}
+          onUpload={(file) => {
+            void onUpload(file, (src, alt) => onChange({ mobileBannerImage: { src, alt: alt || `${product.name} mobile banner` } }));
+          }}
+        />
+      </div>
+    </section>
+  );
+}
+
+function BannerAssetSlot({
+  title,
+  size,
+  imageSrc,
+  disabled,
+  uploadLabel,
+  onUpload
+}: {
+  title: string;
+  size: string;
+  imageSrc: string;
+  disabled: boolean;
+  uploadLabel: string;
+  onUpload: (file: File) => void;
+}) {
+  return (
+    <article className="admin-banner-slot">
+      <div>
+        <strong>{title}</strong>
+        <span>{size}</span>
+      </div>
+      <div className="admin-banner-slot__preview">
+        {imageSrc ? <AdminPreviewImage src={imageSrc} alt="" sizes="280px" /> : <span>未上传</span>}
+      </div>
+      <UploadButton
+        disabled={disabled}
+        label={uploadLabel}
+        onUpload={(files) => {
+          const file = files[0];
+          if (!file) return;
+          onUpload(file);
+        }}
+      />
     </article>
   );
 }

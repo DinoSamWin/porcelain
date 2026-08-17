@@ -80,6 +80,8 @@ export interface Product {
   featuredOrder?: number;
   isHeroBanner?: boolean;
   heroOrder?: number;
+  bannerImage?: ProductImage;
+  mobileBannerImage?: ProductImage;
   createdAt: string;
   updatedAt: string;
 }

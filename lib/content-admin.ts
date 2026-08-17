@@ -113,6 +113,8 @@ function normalizeProduct(product: Product, index: number): Product {
     featuredOrder: Number(product.featuredOrder) || Number(product.sortOrder) || index + 1,
     isHeroBanner: Boolean(product.isHeroBanner),
     heroOrder: Number(product.heroOrder) || Number(product.sortOrder) || index + 1,
+    bannerImage: product.bannerImage?.src ? product.bannerImage : undefined,
+    mobileBannerImage: product.mobileBannerImage?.src ? product.mobileBannerImage : undefined,
     status: product.status ?? "published",
     createdAt: product.createdAt || now,
     updatedAt: now

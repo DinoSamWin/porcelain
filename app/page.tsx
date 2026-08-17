@@ -10,27 +10,40 @@ const featuredProducts = products
   .sort((a, b) => (a.featuredOrder ?? a.sortOrder) - (b.featuredOrder ?? b.sortOrder));
 
 const heroProducts = products
-  .filter((product) => product.isHeroBanner)
+  .filter((product) => product.isHeroBanner && product.bannerImage?.src)
   .sort((a, b) => (a.heroOrder ?? a.sortOrder) - (b.heroOrder ?? b.sortOrder));
 
 const displayProducts = [...products].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export default function HomePage() {
   const heroProduct = heroProducts[0] ?? featuredProducts[0] ?? displayProducts[0];
-  const heroImage = heroProduct?.images[0]?.src || homeContent.hero.image;
-  const heroImageAlt = heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
+  const heroImage = heroProduct?.bannerImage?.src || homeContent.hero.image;
+  const heroMobileImage = heroProduct?.mobileBannerImage?.src || heroImage;
+  const heroImageAlt = heroProduct?.bannerImage?.alt ?? heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
 
   return (
     <>
       <section className="phase-hero" aria-label="Enamel porcelain showcase">
         {heroImage ? (
           <div className="phase-hero__media">
+            {heroMobileImage !== heroImage ? (
+              <Image
+                src={heroMobileImage}
+                alt={heroImageAlt}
+                fill
+                loading="eager"
+                unoptimized
+                className="phase-hero__image phase-hero__image--mobile"
+                sizes="100vw"
+              />
+            ) : null}
             <Image
               src={heroImage}
               alt={heroImageAlt}
               fill
               loading="eager"
               unoptimized
+              className="phase-hero__image phase-hero__image--desktop"
               sizes="(max-width: 860px) 100vw, 54vw"
             />
             <div className="phase-hero__caption">
