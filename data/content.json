@@ -5,13 +5,15 @@
       "subtitle": "Selected enamel porcelain pieces.",
       "primaryCta": "Explore",
       "secondaryCta": "Contact",
-      "image": "/uploads/1786619550547-c3bec711-2e68-429e-b2ef-390da9015af9.png"
+      "image": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png"
     },
     "sellingPoints": [],
     "featuredCategoryIds": [
       "cat-products"
     ],
-    "featuredProductIds": []
+    "featuredProductIds": [
+      "prod-1786619552837"
+    ]
   },
   "categories": [
     {
@@ -42,11 +44,11 @@
     {
       "id": "prod-1786619552837",
       "slug": "product-1",
-      "name": "新商品 1",
-      "sku": "SKU-001",
+      "name": "Cylindrical Pen Holder",
+      "sku": "2AHX4563-5-CC",
       "categoryId": "cat-products",
       "collectionId": "col-main",
-      "material": "待填写",
+      "material": "High-Temperature Porcelain with Pure Copper",
       "color": "待填写",
       "finish": "待填写",
       "moq": 1,
@@ -65,11 +67,11 @@
       "tags": [
         "新品"
       ],
-      "description": "待填写",
+      "description": "",
       "images": [
         {
-          "src": "/uploads/1786619550547-c3bec711-2e68-429e-b2ef-390da9015af9.png",
-          "alt": "c3bec711 2e68 429e b2ef 390da9015af9"
+          "src": "/uploads/1787232871553-call-x40ak5xqk53xgkd8mknvhmxh.png",
+          "alt": "call x40AK5XQk53xgKD8MknVHMxH"
         }
       ],
       "specification": {
@@ -87,12 +89,20 @@
       ],
       "status": "published",
       "sortOrder": 1,
-      "isFeatured": false,
+      "isFeatured": true,
       "featuredOrder": 1,
-      "isHeroBanner": false,
+      "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-13T11:13:16.785Z"
+      "updatedAt": "2026-08-20T13:35:37.104Z",
+      "bannerImage": {
+        "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
+        "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1787232910177-call-euqy8mqulajpfcctq2r6zbe5.png",
+        "alt": "call euQy8mQuLaJPFCcTq2r6ZbE5"
+      }
     }
   ]
 }
