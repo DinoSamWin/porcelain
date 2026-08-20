@@ -72,6 +72,10 @@
         {
           "src": "/uploads/1787232871553-call-x40ak5xqk53xgkd8mknvhmxh.png",
           "alt": "call x40AK5XQk53xgKD8MknVHMxH"
+        },
+        {
+          "src": "/uploads/1787234934006-call-zprqyqg2ablso3ht18cn6gb9.png",
+          "alt": "call ZpRqyQg2ABLSO3ht18cn6Gb9"
         }
       ],
       "specification": {
@@ -94,7 +98,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-20T13:35:37.104Z",
+      "updatedAt": "2026-08-20T14:35:26.936Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
