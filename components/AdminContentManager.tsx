@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, ImageUp, LogOut, Maximize2, Plus, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, ImageUp, LogOut, Maximize2, Plus, Save, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import type { CatalogContent } from "@/data/catalog";
@@ -8,6 +8,7 @@ import { availabilityOptions } from "@/lib/catalog-options";
 import type { Product } from "@/types/domain";
 
 type PublishMode = "github" | "local";
+type AdminView = "list" | "editor";
 
 interface RuntimeStatus {
   publishMode: PublishMode;
@@ -114,6 +115,7 @@ export function AdminContentManager() {
   const [publishMode, setPublishMode] = useState<PublishMode>("local");
   const [runtime, setRuntime] = useState<RuntimeStatus | null>(null);
   const [selectedProductId, setSelectedProductId] = useState("");
+  const [adminView, setAdminView] = useState<AdminView>("list");
   const [status, setStatus] = useState("请输入后台密码登录");
   const [publishNotice, setPublishNotice] = useState("");
   const [localPreviews, setLocalPreviews] = useState<LocalPreview[]>([]);
@@ -121,7 +123,7 @@ export function AdminContentManager() {
   const [busy, setBusy] = useState(false);
 
   const selectedProduct = useMemo(
-    () => content.products.find((product) => product.id === selectedProductId) ?? content.products[0],
+    () => content.products.find((product) => product.id === selectedProductId),
     [content.products, selectedProductId]
   );
   const publishingBlocked = Boolean(runtime && !runtime.canPublishOnline);
@@ -154,7 +156,8 @@ export function AdminContentManager() {
       setContent(result.content ?? emptyContent);
       setPublishMode(result.publishMode ?? "local");
       setRuntime(result.runtime ?? null);
-      setSelectedProductId(result.content?.products?.[0]?.id ?? "");
+      setSelectedProductId("");
+      setAdminView("list");
       setLoggedIn(true);
       setStatus(getRuntimeStatusText(result.runtime) ?? "已登录，可以上传商品");
       setPublishNotice("");
@@ -197,7 +200,7 @@ export function AdminContentManager() {
       specification: blankSpec,
       attributes: [],
       packagingInfo: ["尺寸待确认", "包装待确认"],
-      status: "published",
+      status: "draft",
       sortOrder: index,
       isFeatured: false,
       featuredOrder: index,
@@ -212,6 +215,7 @@ export function AdminContentManager() {
       products: [...current.products, product]
     }));
     setSelectedProductId(id);
+    setAdminView("editor");
   }
 
   function updateProduct(productId: string, patch: Partial<Product>) {
@@ -233,7 +237,13 @@ export function AdminContentManager() {
         products
       };
     });
-    setSelectedProductId(content.products.find((product) => product.id !== productId)?.id ?? "");
+    setSelectedProductId("");
+    setAdminView("list");
+  }
+
+  function openProductEditor(productId: string) {
+    setSelectedProductId(productId);
+    setAdminView("editor");
   }
 
   async function uploadImage(file: File, onUploaded: (src: string, alt: string) => void) {
@@ -341,37 +351,34 @@ export function AdminContentManager() {
           </div>
         </div>
         <nav aria-label="后台导航">
-          <a href="#catalog">商品管理</a>
-          <a href="#assets">素材规范</a>
-          <a href="#publish">发布设置</a>
+          <button className="is-active" type="button" onClick={() => setAdminView("list")}>
+            商品管理
+          </button>
         </nav>
         <div className="admin-dashboard-help">
           <span>当前模式</span>
           <strong>{getPublishModeLabel(publishMode, runtime)}</strong>
-          <p>商品主图、详情图和 Banner 图分开管理。</p>
+          <p>商品可以先保存为草稿，确认后再发布到前台。</p>
         </div>
       </aside>
 
       <section className="admin-dashboard-main">
         <header className="admin-simple-header">
           <div>
-            <span>商品后台</span>
-            <h1>上传商品</h1>
+            <span>{adminView === "list" ? "商品后台" : "商品编辑"}</span>
+            <h1>{adminView === "list" ? "商品管理" : "商品编辑详情页"}</h1>
           </div>
           <div className="admin-simple-actions">
+            {adminView === "editor" ? (
+              <button className="btn btn-secondary" type="button" onClick={() => setAdminView("list")}>
+                <ArrowLeft size={16} aria-hidden="true" />
+                返回商品管理
+              </button>
+            ) : null}
             <button className="btn btn-secondary" type="button" onClick={() => createProduct()}>
               <Plus size={16} aria-hidden="true" />
-              新建空商品
+              新建商品
             </button>
-            <UploadButton
-              disabled={busy || publishingBlocked}
-              label="上传图片新建商品"
-              onUpload={(files) => {
-                const file = files[0];
-                if (!file) return;
-                void uploadImage(file, (src, alt) => createProduct(src, alt));
-              }}
-            />
             <button className="btn btn-primary" type="button" onClick={saveContent} disabled={busy || publishingBlocked}>
               <Save size={16} aria-hidden="true" />
               保存发布
@@ -423,72 +430,146 @@ export function AdminContentManager() {
           ) : null}
         </div>
 
-        <div id="assets">
-          <ImageSizeGuide />
-        </div>
-
-        {content.products.length === 0 ? (
-          <div className="admin-empty-uploader">
-            <ImageUp size={34} aria-hidden="true" />
-            <h2>还没有商品</h2>
-            <p>点击上传图片，新商品会自动创建，不需要复制图片路径。</p>
-            <UploadButton
+        <div className="admin-workspace">
+          {adminView === "list" ? (
+            <ProductManagementList
+              products={content.products}
+              localPreviews={localPreviews}
               disabled={busy || publishingBlocked}
-              label="上传第一张商品图"
-              onUpload={(files) => {
-                const file = files[0];
-                if (!file) return;
+              onCreate={() => createProduct()}
+              onCreateFromImage={(file) => {
                 void uploadImage(file, (src, alt) => createProduct(src, alt));
               }}
+              onOpen={openProductEditor}
             />
-          </div>
-        ) : (
-          <div className="admin-simple-grid" id="catalog">
-            <aside className="admin-simple-side">
-              <div className="admin-simple-list">
-                {content.products.map((product) => (
-                  <button
-                    className={selectedProduct?.id === product.id ? "is-active" : ""}
-                    key={product.id}
-                    type="button"
-                    onClick={() => setSelectedProductId(product.id)}
-                  >
-                    {product.images[0]?.src ? (
-                      <span className="admin-simple-thumb">
-                        <AdminPreviewImage src={getPreviewSrc(product.images[0].src, localPreviews)} alt="" sizes="68px" />
-                      </span>
-                    ) : (
-                      <span className="admin-simple-thumb">无图</span>
-                    )}
-                    <span>
-                      <strong>{product.name}</strong>
-                      <small>{getPublishSummary(product)}</small>
-                    </span>
-                  </button>
-                ))}
+          ) : selectedProduct ? (
+            <div className="admin-editor-layout">
+              <aside className="admin-editor-side">
+                <ProductImagePreview product={selectedProduct} localPreviews={localPreviews} onOpen={setLightboxImage} />
+                <div className="admin-editor-side__meta">
+                  <span>{selectedProduct.status === "published" ? "已发布" : "草稿"}</span>
+                  <strong>{selectedProduct.name}</strong>
+                  <p>{getPublishSummary(selectedProduct)}</p>
+                </div>
+              </aside>
+              <div className="admin-editor-scroll">
+                <ProductSimpleEditor
+                  product={selectedProduct}
+                  localPreviews={localPreviews}
+                  disabled={busy || publishingBlocked}
+                  onChange={(patch) => updateProduct(selectedProduct.id, patch)}
+                  onRemove={() => removeProduct(selectedProduct.id)}
+                  onUpload={uploadImage}
+                />
               </div>
-
-              <ProductImagePreview product={selectedProduct} localPreviews={localPreviews} onOpen={setLightboxImage} />
-            </aside>
-
-            {selectedProduct ? (
-              <div id="publish">
-              <ProductSimpleEditor
-                product={selectedProduct}
-                localPreviews={localPreviews}
-                disabled={busy || publishingBlocked}
-                onChange={(patch) => updateProduct(selectedProduct.id, patch)}
-                onRemove={() => removeProduct(selectedProduct.id)}
-                onUpload={uploadImage}
-              />
-              </div>
-            ) : null}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="admin-empty-uploader">
+              <ImageUp size={34} aria-hidden="true" />
+              <h2>请选择一个商品</h2>
+              <p>从商品管理列表进入编辑，或新建一个商品。</p>
+              <button className="btn btn-primary" type="button" onClick={() => createProduct()}>
+                <Plus size={16} aria-hidden="true" />
+                新建商品
+              </button>
+            </div>
+          )}
+        </div>
       </section>
 
       {lightboxImage ? <ImageLightbox image={lightboxImage} onClose={() => setLightboxImage(null)} /> : null}
     </main>
+  );
+}
+
+function ProductManagementList({
+  products,
+  localPreviews,
+  disabled,
+  onCreate,
+  onCreateFromImage,
+  onOpen
+}: {
+  products: Product[];
+  localPreviews: LocalPreview[];
+  disabled: boolean;
+  onCreate: () => void;
+  onCreateFromImage: (file: File) => void;
+  onOpen: (productId: string) => void;
+}) {
+  const publishedCount = products.filter((product) => product.status === "published").length;
+  const draftCount = products.filter((product) => product.status === "draft").length;
+
+  return (
+    <section className="admin-products-panel">
+      <div className="admin-products-panel__head">
+        <div>
+          <span>商品管理</span>
+          <h2>全部商品</h2>
+          <p>
+            共 {products.length} 个商品，已发布 {publishedCount} 个，草稿 {draftCount} 个。
+          </p>
+        </div>
+        <div className="admin-simple-actions">
+          <button className="btn btn-secondary" type="button" onClick={onCreate}>
+            <Plus size={16} aria-hidden="true" />
+            新建商品
+          </button>
+          <UploadButton
+            disabled={disabled}
+            label="上传图片新建商品"
+            onUpload={(files) => {
+              const file = files[0];
+              if (!file) return;
+              onCreateFromImage(file);
+            }}
+          />
+        </div>
+      </div>
+
+      {products.length === 0 ? (
+        <div className="admin-empty-uploader">
+          <ImageUp size={34} aria-hidden="true" />
+          <h2>还没有商品</h2>
+          <p>点击新建商品，进入编辑页后上传主图和详情图。</p>
+          <button className="btn btn-primary" type="button" onClick={onCreate}>
+            <Plus size={16} aria-hidden="true" />
+            新建商品
+          </button>
+        </div>
+      ) : (
+        <div className="admin-product-table">
+          <div className="admin-product-table__row admin-product-table__row--head">
+            <span>商品</span>
+            <span>状态</span>
+            <span>展示位置</span>
+            <span>操作</span>
+          </div>
+          {products.map((product) => (
+            <div className="admin-product-table__row" key={product.id}>
+              <button className="admin-product-table__product" type="button" onClick={() => onOpen(product.id)}>
+                {product.images[0]?.src ? (
+                  <span className="admin-simple-thumb">
+                    <AdminPreviewImage src={getPreviewSrc(product.images[0].src, localPreviews)} alt="" sizes="68px" />
+                  </span>
+                ) : (
+                  <span className="admin-simple-thumb">无图</span>
+                )}
+                <span>
+                  <strong>{product.name}</strong>
+                  <small>{product.sku}</small>
+                </span>
+              </button>
+              <span className={`admin-status-pill admin-status-pill--${product.status}`}>{getProductStatusLabel(product.status)}</span>
+              <span className="admin-product-table__summary">{getPublishSummary(product)}</span>
+              <button className="btn btn-secondary" type="button" onClick={() => onOpen(product.id)}>
+                编辑
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -498,6 +579,15 @@ function getPublishSummary(product: Product) {
   if (product.isFeatured) places.push(`推荐${product.featuredOrder ?? product.sortOrder}`);
   if (product.isHeroBanner) places.push(product.bannerImage?.src ? `Banner${product.heroOrder ?? product.sortOrder}` : "Banner待补图");
   return places.length > 0 ? places.join(" / ") : "未发布";
+}
+
+function getProductStatusLabel(status: Product["status"]) {
+  const labels: Record<Product["status"], string> = {
+    draft: "草稿",
+    published: "已发布",
+    archived: "已归档"
+  };
+  return labels[status] ?? status;
 }
 
 function getPublishModeLabel(publishMode: PublishMode, runtime: RuntimeStatus | null) {
@@ -625,6 +715,8 @@ function ProductSimpleEditor({
         />
         <UploadButton disabled={disabled} label="追加详情图" multiple onUpload={appendGalleryImages} />
       </div>
+
+      <ImageSizeGuide />
 
       <section className="admin-publish-box">
         <div>

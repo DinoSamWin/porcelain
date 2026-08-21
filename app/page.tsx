@@ -20,37 +20,43 @@ export default function HomePage() {
   const heroImage = heroProduct?.bannerImage?.src || homeContent.hero.image;
   const heroMobileImage = heroProduct?.mobileBannerImage?.src || heroImage;
   const heroImageAlt = heroProduct?.bannerImage?.alt ?? heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
+  const heroHref = heroProduct ? `/products/${heroProduct.slug}` : "";
+  const heroMedia = (
+    <>
+      {heroMobileImage !== heroImage ? (
+        <Image
+          src={heroMobileImage}
+          alt={heroImageAlt}
+          fill
+          loading="eager"
+          unoptimized
+          className="phase-hero__image phase-hero__image--mobile"
+          sizes="100vw"
+        />
+      ) : null}
+      <Image
+        src={heroImage}
+        alt={heroImageAlt}
+        fill
+        loading="eager"
+        unoptimized
+        className="phase-hero__image phase-hero__image--desktop"
+        sizes="100vw"
+      />
+    </>
+  );
 
   return (
     <>
       <section className="phase-hero" aria-label="Enamel porcelain showcase">
         {heroImage ? (
-          <div className="phase-hero__media">
-            {heroMobileImage !== heroImage ? (
-              <Image
-                src={heroMobileImage}
-                alt={heroImageAlt}
-                fill
-                loading="eager"
-                unoptimized
-                className="phase-hero__image phase-hero__image--mobile"
-                sizes="100vw"
-              />
-            ) : null}
-            <Image
-              src={heroImage}
-              alt={heroImageAlt}
-              fill
-              loading="eager"
-              unoptimized
-              className="phase-hero__image phase-hero__image--desktop"
-              sizes="(max-width: 860px) 100vw, 54vw"
-            />
-            <div className="phase-hero__caption">
-              <span>Featured Piece</span>
-              <strong>{heroProduct?.name ?? "Enamel Porcelain"}</strong>
-            </div>
-          </div>
+          heroHref ? (
+            <Link className="phase-hero__media phase-hero__media--link" href={heroHref} aria-label={`View ${heroProduct?.name}`}>
+              {heroMedia}
+            </Link>
+          ) : (
+            <div className="phase-hero__media">{heroMedia}</div>
+          )
         ) : (
           <div className="phase-hero__empty">
             <ImageUp size={42} aria-hidden="true" />
@@ -59,9 +65,6 @@ export default function HomePage() {
         )}
 
         <div className="phase-hero__copy">
-          <span className="section-kicker">Aurelia Objects</span>
-          <h1>Enamel Porcelain Objects</h1>
-          <p>A compact visual edit for European buyer meetings.</p>
           <div className="phase-hero__actions">
             <Link className="btn btn-primary" href="#featured">
               Explore
