@@ -8,6 +8,12 @@ import { ProductCard } from "@/components/ProductCard";
 import { getCategoryById, getCollectionById, getProductBySlug, getRelatedProducts, products } from "@/data/catalog";
 import { getAvailabilityLabel } from "@/lib/catalog-options";
 
+interface DetailRow {
+  label: string;
+  value: string | null;
+  inquiryLabel: string;
+}
+
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -49,11 +55,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const categoryLabel = getPublicText(product.tags[0]) ?? getPublicText(category?.name);
   const productDescription = getPublicText(product.description) ?? "Visual reference for buyer review.";
   const packagingInfo = getPublicPackagingInfo(product.packagingInfo);
-  const detailRows = compactRows([
-    { label: "Material", value: getPublicText(product.material) },
-    { label: "Color", value: getPublicText(product.color) },
-    { label: "Craft", value: getPublicText(product.finish) },
-    { label: "Use", value: getPublicText(product.usage[0]) },
+  const detailRows = [
+    { label: "Material", value: getPublicText(product.material), inquiryLabel: "Ask supplier for material" },
+    { label: "Color", value: getPublicText(product.color), inquiryLabel: "Ask supplier for color" },
+    { label: "Craft", value: getPublicText(product.finish), inquiryLabel: "Ask supplier for craft" },
+    { label: "Use", value: getPublicText(product.usage[0]), inquiryLabel: "Ask supplier for use" },
+  ] satisfies DetailRow[];
+  const attributeRows = compactRows([
     ...product.attributes.slice(0, 2).map((attribute) => ({
       label: getPublicText(attribute.label),
       value: getPublicText(attribute.value)
@@ -75,16 +83,26 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               <span key={item}>{item}</span>
             ))}
           </div>
-          {detailRows.length > 0 ? (
-            <div className="detail-table detail-table--phase">
-              {detailRows.map((row) => (
-                <div key={`${row.label}-${row.value}`}>
-                  <span>{row.label}</span>
+          <div className="detail-table detail-table--phase">
+            {detailRows.map((row) => (
+              <div key={row.label}>
+                <span>{row.label}</span>
+                {row.value ? (
                   <strong>{row.value}</strong>
-                </div>
-              ))}
-            </div>
-          ) : null}
+                ) : (
+                  <Link className="detail-inquiry-link" href="/request-quote">
+                    {row.inquiryLabel}
+                  </Link>
+                )}
+              </div>
+            ))}
+            {attributeRows.map((row) => (
+              <div key={`${row.label}-${row.value}`}>
+                <span>{row.label}</span>
+                <strong>{row.value}</strong>
+              </div>
+            ))}
+          </div>
           <div className="product-info__actions">
             <AddToInquiryButton productId={product.id} quantity={1} className="btn btn-primary" />
             <Link className="btn btn-secondary" href="/request-quote">
@@ -104,9 +122,15 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </div>
           <ul className="packaging-list">
             {packagingInfo.map((item) => (
-              <li key={item}>
+              <li key={item.label}>
                 <PackageCheck size={18} aria-hidden="true" />
-                {item}
+                {item.value ? (
+                  item.value
+                ) : (
+                  <Link className="detail-inquiry-link" href="/request-quote">
+                    {item.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -164,5 +188,12 @@ function getPublicPackagingInfo(items: string[]) {
     .map((item) => getPublicText(item))
     .filter((item): item is string => Boolean(item));
 
-  return cleaned.length > 0 ? cleaned : ["Dimensions to be confirmed", "Packing to be confirmed"];
+  if (cleaned.length > 0) {
+    return cleaned.map((item) => ({ label: item, value: item }));
+  }
+
+  return [
+    { label: "Ask supplier for dimensions", value: null },
+    { label: "Ask supplier for packing", value: null }
+  ];
 }

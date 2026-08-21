@@ -4247,6 +4247,38 @@ textarea:focus {
 
 .product-detail.product-detail--phase .detail-table {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.product-detail.product-detail--phase .detail-table div {
+  min-width: 0;
+  padding-right: 0;
+}
+
+.product-detail.product-detail--phase .detail-table strong {
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+
+.detail-inquiry-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 7px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.detail-inquiry-link:hover {
+  color: var(--green);
+}
+
+.packaging-list .detail-inquiry-link {
+  margin-top: 0;
 }
 
 .product-detail.product-detail--phase .product-info__actions {
