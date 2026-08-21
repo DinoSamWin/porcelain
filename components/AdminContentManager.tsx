@@ -184,18 +184,18 @@ export function AdminContentManager() {
       sku: `SKU-${String(index).padStart(3, "0")}`,
       categoryId: content.categories[0]?.id ?? "cat-products",
       collectionId: content.collections[0]?.id ?? "col-main",
-      material: "待填写",
-      color: "待填写",
-      finish: "待填写",
+      material: "",
+      color: "",
+      finish: "",
       moq: 1,
       leadTime: "待确认",
       availability: "in-stock",
       customizable: false,
       marketFit: ["Europe", "Retail", "Importer"],
-      usage: ["商品展示"],
+      usage: [],
       style: "珐琅瓷",
-      tags: ["新品"],
-      description: "待填写",
+      tags: [],
+      description: "",
       images: src ? [{ src, alt: alt || "商品图片" }] : [],
       specification: blankSpec,
       attributes: [],
@@ -807,17 +807,46 @@ function ProductSimpleEditor({
 
       <label>
         商品材质
-        <input value={product.material} onChange={(event) => onChange({ material: event.target.value })} />
+        <input
+          value={product.material}
+          onChange={(event) => onChange({ material: event.target.value })}
+          placeholder="例如：High-Temperature Porcelain with Pure Copper"
+        />
       </label>
 
-      <label>
-        商品分类
-        <input value={product.tags[0] ?? ""} onChange={(event) => onChange({ tags: [event.target.value] })} placeholder="例如：香炉 / 花器 / 摆件" />
-      </label>
+      <div className="admin-simple-two">
+        <label>
+          商品颜色
+          <input value={product.color} onChange={(event) => onChange({ color: event.target.value })} placeholder="例如：Coral red / Antique gold" />
+        </label>
+        <label>
+          工艺 / 表面效果
+          <input value={product.finish} onChange={(event) => onChange({ finish: event.target.value })} placeholder="例如：Gloss enamel with copper trim" />
+        </label>
+      </div>
+
+      <div className="admin-simple-two">
+        <label>
+          商品分类
+          <input value={product.tags[0] ?? ""} onChange={(event) => onChange({ tags: [event.target.value] })} placeholder="例如：Pen Holder / Vase / Decorative Object" />
+        </label>
+        <label>
+          用途 / 使用场景
+          <input
+            value={product.usage[0] ?? ""}
+            onChange={(event) => onChange({ usage: event.target.value ? [event.target.value] : [] })}
+            placeholder="例如：Desk pen holder / Office decor"
+          />
+        </label>
+      </div>
 
       <label>
         简短说明
-        <textarea value={product.description} onChange={(event) => onChange({ description: event.target.value })} />
+        <textarea
+          value={product.description}
+          onChange={(event) => onChange({ description: event.target.value })}
+          placeholder="例如：A handcrafted enamel porcelain pen holder for refined desk and hospitality interiors."
+        />
       </label>
 
       {product.images.length > 1 ? (

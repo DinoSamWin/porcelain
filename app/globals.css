@@ -4217,3 +4217,59 @@ textarea:focus {
   color: var(--white);
   background: rgba(18, 20, 17, 0.56);
 }
+
+.product-detail.product-detail--phase {
+  grid-template-columns: minmax(360px, 520px) minmax(420px, 1fr);
+  gap: 42px;
+  align-items: start;
+  max-width: 1200px;
+  padding-top: 44px;
+}
+
+.product-detail--phase .product-gallery {
+  width: 100%;
+  max-width: 520px;
+}
+
+.product-detail.product-detail--phase .product-info {
+  align-self: start;
+  padding-top: 8px;
+}
+
+.product-detail.product-detail--phase .product-info h1 {
+  max-width: 620px;
+  font-size: clamp(38px, 3.5vw, 50px);
+}
+
+.product-detail.product-detail--phase .detail-meta {
+  margin: 16px 0 22px;
+}
+
+.product-detail.product-detail--phase .detail-table {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-detail.product-detail--phase .product-info__actions {
+  margin-top: 24px;
+}
+
+@media (max-width: 1020px) {
+  .product-detail.product-detail--phase {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+  }
+
+  .product-detail--phase .product-gallery {
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .product-detail.product-detail--phase {
+    padding-top: 24px;
+  }
+
+  .product-detail.product-detail--phase .detail-table {
+    grid-template-columns: 1fr;
+  }
+}

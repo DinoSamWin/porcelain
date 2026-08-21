@@ -45,20 +45,21 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const category = getCategoryById(product.categoryId);
   const collection = getCollectionById(product.collectionId);
   const related = getRelatedProducts(product);
-  const collectionLabel = getDisplayText(collection?.name, "Enamel Porcelain");
-  const categoryLabel = getDisplayText(category?.name, "Object");
-  const usageLabel = getDisplayText(product.usage[0], "Decorative object");
+  const collectionLabel = getPublicText(collection?.name) ?? "Enamel Porcelain";
+  const categoryLabel = getPublicText(product.tags[0]) ?? getPublicText(category?.name);
+  const productDescription = getPublicText(product.description) ?? "Visual reference for buyer review.";
   const packagingInfo = getPublicPackagingInfo(product.packagingInfo);
-  const detailRows = [
-    { label: "Material", value: getDisplayText(product.material, "To be confirmed") },
-    { label: "Color", value: getDisplayText(product.color, "To be confirmed") },
-    { label: "Finish", value: getDisplayText(product.finish, "To be confirmed") },
-    { label: "Use", value: usageLabel },
+  const detailRows = compactRows([
+    { label: "Material", value: getPublicText(product.material) },
+    { label: "Color", value: getPublicText(product.color) },
+    { label: "Craft", value: getPublicText(product.finish) },
+    { label: "Use", value: getPublicText(product.usage[0]) },
     ...product.attributes.slice(0, 2).map((attribute) => ({
-      label: getDisplayText(attribute.label, "Detail"),
-      value: getDisplayText(attribute.value, "To be confirmed")
+      label: getPublicText(attribute.label),
+      value: getPublicText(attribute.value)
     }))
-  ];
+  ]);
+  const metaItems = compactStrings([product.sku, categoryLabel, getAvailabilityLabel(product.availability)]);
 
   return (
     <>
@@ -68,20 +69,22 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         <div className="product-info">
           <span className="section-kicker">{collectionLabel}</span>
           <h1>{product.name}</h1>
-          <p>Visual reference for buyer review.</p>
+          <p>{productDescription}</p>
           <div className="detail-meta">
-            <span>{product.sku}</span>
-            <span>{categoryLabel}</span>
-            <span>{getAvailabilityLabel(product.availability)}</span>
-          </div>
-          <div className="detail-table detail-table--phase">
-            {detailRows.map((row) => (
-              <div key={`${row.label}-${row.value}`}>
-                <span>{row.label}</span>
-                <strong>{row.value}</strong>
-              </div>
+            {metaItems.map((item) => (
+              <span key={item}>{item}</span>
             ))}
           </div>
+          {detailRows.length > 0 ? (
+            <div className="detail-table detail-table--phase">
+              {detailRows.map((row) => (
+                <div key={`${row.label}-${row.value}`}>
+                  <span>{row.label}</span>
+                  <strong>{row.value}</strong>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <div className="product-info__actions">
             <AddToInquiryButton productId={product.id} quantity={1} className="btn btn-primary" />
             <Link className="btn btn-secondary" href="/request-quote">
@@ -137,21 +140,29 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   );
 }
 
-function getDisplayText(value: string | undefined, fallback: string) {
+function getPublicText(value: string | undefined) {
   const text = value?.trim();
-  const placeholders = new Set(["待填写", "待确认", "商品展示", "尺寸待确认", "包装待确认", "默认系列", "商品", "新品"]);
+  const placeholders = new Set(["待填写", "待确认", "商品展示", "尺寸待确认", "包装待确认", "默认系列", "商品", "新品", "Object"]);
 
   if (!text || placeholders.has(text)) {
-    return fallback;
+    return null;
   }
 
   return text;
 }
 
+function compactRows(rows: Array<{ label: string | null; value: string | null }>) {
+  return rows.filter((row): row is { label: string; value: string } => Boolean(row.label && row.value));
+}
+
+function compactStrings(values: Array<string | null | undefined>) {
+  return values.filter((value): value is string => Boolean(value));
+}
+
 function getPublicPackagingInfo(items: string[]) {
   const cleaned = items
-    .map((item) => getDisplayText(item, ""))
-    .filter(Boolean);
+    .map((item) => getPublicText(item))
+    .filter((item): item is string => Boolean(item));
 
   return cleaned.length > 0 ? cleaned : ["Dimensions to be confirmed", "Packing to be confirmed"];
 }
