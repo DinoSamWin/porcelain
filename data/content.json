@@ -14,7 +14,8 @@
     "featuredProductIds": [
       "prod-1786619552837",
       "prod-1788052745021",
-      "prod-1788055052062"
+      "prod-1788055052062",
+      "prod-1788058556452"
     ]
   },
   "categories": [
@@ -100,7 +101,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T02:18:59.441Z",
+      "updatedAt": "2026-08-30T03:09:03.268Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -167,7 +168,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T02:18:59.444Z",
+      "updatedAt": "2026-08-30T03:09:03.270Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -234,7 +235,7 @@
       "isHeroBanner": true,
       "heroOrder": 3,
       "createdAt": "2026-08-30T01:57:32.062Z",
-      "updatedAt": "2026-08-30T02:18:59.444Z",
+      "updatedAt": "2026-08-30T03:09:03.270Z",
       "bannerImage": {
         "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
         "alt": "decorative trinket box banner 2880x1400"
@@ -242,6 +243,73 @@
       "mobileBannerImage": {
         "src": "/uploads/1788056036694-decorative-trinket-box-mobile-banner-1600x2200.png",
         "alt": "decorative trinket box mobile banner 1600x2200"
+      }
+    },
+    {
+      "id": "prod-1788058556452",
+      "slug": "product-4",
+      "name": "Decorative Flower Vase",
+      "sku": "A1224EHC",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "High-Temperature Porcelain and Metal",
+      "color": "Coral Pink, Deep Purple, White, and Antique Gold",
+      "finish": "High-Temperature Firing, Hand-Applied Artwork, Glazed Finish, and Ornate Metal Detailing",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Suitable for displaying fresh flowers, dried flowers, artificial arrangements, or as a standalone decorative object"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "Decorative Vase / Flower Vase / Home Décor"
+      ],
+      "description": "A coral-pink porcelain vase with ornate metal accents and delicate bird artwork, designed to bring timeless elegance to refined interiors.",
+      "images": [
+        {
+          "src": "/uploads/1788058680178-decorative-flower-vase-product-cover-1600x2000.png",
+          "alt": "decorative flower vase product cover 1600x2000"
+        },
+        {
+          "src": "/uploads/1788059325424-decorative-flower-vase-detail-no-flowers-2000x2500.png",
+          "alt": "decorative flower vase detail no flowers 2000x2500"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 4,
+      "isFeatured": true,
+      "featuredOrder": 4,
+      "isHeroBanner": true,
+      "heroOrder": 4,
+      "createdAt": "2026-08-30T02:55:56.452Z",
+      "updatedAt": "2026-08-30T03:09:03.270Z",
+      "bannerImage": {
+        "src": "/uploads/1788058897415-decorative-flower-vase-ivory-lavender-bedroom-banner-2880x1400.png",
+        "alt": "decorative flower vase ivory lavender bedroom banner 2880x1400"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1788059047110-c8ea34eb-c249-4d98-a842-5a17aa67b728.png",
+        "alt": "c8ea34eb c249 4d98 a842 5a17aa67b728"
       }
     }
   ]
