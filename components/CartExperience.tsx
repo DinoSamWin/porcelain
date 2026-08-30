@@ -141,7 +141,7 @@ export function CartExperience({ products }: CartExperienceProps) {
       </section>
 
       <form className="inquiry-form panel" onSubmit={handleSubmit}>
-        <h2>Buyer Information</h2>
+        <h2>Buyer Contact</h2>
         <label>
           Name
           <input name="name" required placeholder="Your name" />

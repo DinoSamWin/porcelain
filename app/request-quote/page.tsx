@@ -13,7 +13,7 @@ export default async function RequestQuotePage({ searchParams }: { searchParams:
   return (
     <section className="section-pad page-shell">
       <div className="section-heading section-heading--left">
-        <span>Contact</span>
+        <span>Contact Sales</span>
         <h1>Send buyer interest</h1>
         <p>No account required.</p>
       </div>
