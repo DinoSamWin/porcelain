@@ -1507,4 +1507,4 @@ export const countryRegionOptions: CountryRegionOption[] = [
   }
 ];
 
-export const allCountryRegionOptions = [...priorityCountryRegions, ...countryRegionOptions];
+export const allCountryRegionOptions = [...priorityCountryRegions, ...countryRegionOptions].sort((a, b) => a.label.localeCompare(b.label));
