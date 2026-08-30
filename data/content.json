@@ -13,7 +13,8 @@
     ],
     "featuredProductIds": [
       "prod-1786619552837",
-      "prod-1788052745021"
+      "prod-1788052745021",
+      "prod-1788055052062"
     ]
   },
   "categories": [
@@ -99,7 +100,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T01:26:21.592Z",
+      "updatedAt": "2026-08-30T02:18:59.441Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -166,7 +167,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T01:26:21.594Z",
+      "updatedAt": "2026-08-30T02:18:59.444Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -174,6 +175,73 @@
       "mobileBannerImage": {
         "src": "/uploads/1788052944316-luxury-fruit-plate-mobile-banner-centered-1600x2200.png",
         "alt": "luxury fruit plate mobile banner centered 1600x2200"
+      }
+    },
+    {
+      "id": "prod-1788055052062",
+      "slug": "product-3",
+      "name": "Decorative Trinket Box",
+      "sku": "B788",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "High-Temperature Porcelain & Pure Copper",
+      "color": "Ivory White, Emerald Green & Antique Gold",
+      "finish": "High-Temperature Firing, Glaze Painting, Copper Casting & Hand Assembly",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Storing Rings, Earrings, Necklaces and Small Keepsakes"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "Decorative Trinket Box / Jewelry Storage"
+      ],
+      "description": "A luxurious porcelain and pure copper trinket box for storing jewelry and adding elegance to any interior.",
+      "images": [
+        {
+          "src": "/uploads/1788055117191-decorative-trinket-box-product-cover-1600x2000.png",
+          "alt": "decorative trinket box product cover 1600x2000"
+        },
+        {
+          "src": "/uploads/1788056278957-decorative-trinket-box-open-detail-2000x2500.png",
+          "alt": "decorative trinket box open detail 2000x2500"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 3,
+      "isFeatured": true,
+      "featuredOrder": 3,
+      "isHeroBanner": true,
+      "heroOrder": 3,
+      "createdAt": "2026-08-30T01:57:32.062Z",
+      "updatedAt": "2026-08-30T02:18:59.444Z",
+      "bannerImage": {
+        "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
+        "alt": "decorative trinket box banner 2880x1400"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1788056036694-decorative-trinket-box-mobile-banner-1600x2200.png",
+        "alt": "decorative trinket box mobile banner 1600x2200"
       }
     }
   ]
