@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import { CountryRegionSelect } from "@/components/CountryRegionSelect";
 import { createInquiryId, getCurrentSourceContext, getOrCreateVisitorId, submitInquiryRecord } from "@/lib/inquiry";
 import type { Product } from "@/types/domain";
 
@@ -56,16 +57,13 @@ export function RequestQuoteForm({ products, sourceProductSlug = "" }: { product
           companyName: getFormText(formData, "companyName"),
           countryRegion: getFormText(formData, "country"),
           email: getFormText(formData, "email"),
-          phone: getFormText(formData, "phone"),
           shippingDestination: getFormText(formData, "destination"),
-          preferredContactMethod: getFormText(formData, "contactMethod")
+          preferredContactMethod: "email"
         },
         trade: {
           targetMarket: getFormText(formData, "targetMarket"),
-          volume: getFormText(formData, "volume"),
           customLogo: getFormText(formData, "customLogo"),
           customPackaging: getFormText(formData, "customPackaging"),
-          incoterms: getFormText(formData, "incoterms"),
           deliveryTime: getFormText(formData, "deliveryTime")
         },
         requirements: getFormText(formData, "requirements"),
@@ -79,8 +77,7 @@ export function RequestQuoteForm({ products, sourceProductSlug = "" }: { product
           email: formData.get("email"),
           items: submitItems,
           tradeInfo: {
-            targetMarket: formData.get("targetMarket"),
-            incoterms: formData.get("incoterms")
+            targetMarket: formData.get("targetMarket")
           },
           createdAt: new Date().toISOString()
         })
@@ -130,27 +127,15 @@ export function RequestQuoteForm({ products, sourceProductSlug = "" }: { product
           </label>
           <label>
             Country / Region
-            <input name="country" required />
+            <CountryRegionSelect required />
           </label>
           <label>
             Email
             <input name="email" required type="email" />
           </label>
           <label>
-            WhatsApp / Phone
-            <input name="phone" />
-          </label>
-          <label>
             Shipping Destination
             <input name="destination" />
-          </label>
-          <label>
-            Preferred Contact Method
-            <select name="contactMethod" defaultValue="email">
-              <option value="email">Email</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="phone">Phone</option>
-            </select>
           </label>
         </div>
       </section>
@@ -168,10 +153,6 @@ export function RequestQuoteForm({ products, sourceProductSlug = "" }: { product
             </select>
           </label>
           <label>
-            Interest Level
-            <input name="volume" placeholder="Buyer feedback, sample request, showroom discussion..." />
-          </label>
-          <label>
             Need Custom Logo?
             <select name="customLogo" defaultValue="Not sure">
               <option>Not sure</option>
@@ -185,15 +166,6 @@ export function RequestQuoteForm({ products, sourceProductSlug = "" }: { product
               <option>Not sure</option>
               <option>Yes</option>
               <option>No</option>
-            </select>
-          </label>
-          <label>
-            Preferred Incoterms
-            <select name="incoterms" defaultValue="FOB">
-              <option>FOB</option>
-              <option>CIF</option>
-              <option>EXW</option>
-              <option>DDP sample shipment</option>
             </select>
           </label>
           <label>

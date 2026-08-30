@@ -776,16 +776,12 @@ function InquiryRecordCard({ inquiry }: { inquiry: InquiryRecord }) {
     ["公司", inquiry.customer.companyName],
     ["国家/地区", inquiry.customer.countryRegion],
     ["邮箱", inquiry.customer.email],
-    ["电话 / WhatsApp", inquiry.customer.phone],
-    ["收货目的地", inquiry.customer.shippingDestination],
-    ["首选联系", getContactMethodLabel(inquiry.customer.preferredContactMethod)]
+    ["收货目的地", inquiry.customer.shippingDestination]
   ];
   const tradeRows: Array<[string, string | undefined]> = [
     ["目标市场", inquiry.trade.targetMarket],
-    ["意向等级 / 需求", inquiry.trade.volume],
     ["定制 Logo", inquiry.trade.customLogo],
     ["定制包装", inquiry.trade.customPackaging],
-    ["贸易条款", inquiry.trade.incoterms],
     ["期望交付", inquiry.trade.deliveryTime],
     ["留言", inquiry.message],
     ["跟进要求", inquiry.requirements]
@@ -887,15 +883,6 @@ function FieldLine({ label, value, mono = false }: { label: string; value: strin
       <strong className={mono ? "is-mono" : ""}>{value ? value : "未填写"}</strong>
     </p>
   );
-}
-
-function getContactMethodLabel(method: InquiryRecord["customer"]["preferredContactMethod"]) {
-  const labels: Record<InquiryRecord["customer"]["preferredContactMethod"], string> = {
-    email: "Email",
-    whatsapp: "WhatsApp",
-    phone: "Phone"
-  };
-  return labels[method] ?? method;
 }
 
 function getInquiryStatusLabel(status: InquiryRecord["status"]) {

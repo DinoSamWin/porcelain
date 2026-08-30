@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CountryRegionSelect } from "@/components/CountryRegionSelect";
 import { useCart } from "@/components/CartProvider";
 import { createInquiryId, getCurrentSourceContext, getOrCreateVisitorId, submitInquiryRecord } from "@/lib/inquiry";
 import type { Product } from "@/types/domain";
@@ -51,9 +52,8 @@ export function CartExperience({ products }: CartExperienceProps) {
           companyName: getFormText(formData, "companyName"),
           countryRegion: getFormText(formData, "country"),
           email: getFormText(formData, "email"),
-          phone: getFormText(formData, "phone"),
           shippingDestination: getFormText(formData, "destination"),
-          preferredContactMethod: getFormText(formData, "contactMethod")
+          preferredContactMethod: "email"
         },
         message: getFormText(formData, "message"),
         items: items.map((item) => ({
@@ -152,27 +152,15 @@ export function CartExperience({ products }: CartExperienceProps) {
         </label>
         <label>
           Country / Region
-          <input name="country" required placeholder="Germany, UAE, Saudi Arabia..." />
+          <CountryRegionSelect required />
         </label>
         <label>
           Email
           <input name="email" required type="email" placeholder="buyer@company.com" />
         </label>
         <label>
-          WhatsApp / Phone
-          <input name="phone" placeholder="+971..." />
-        </label>
-        <label>
           Shipping Destination
           <input name="destination" placeholder="Port, warehouse, or country" />
-        </label>
-        <label>
-          Preferred Contact Method
-          <select name="contactMethod" defaultValue="email">
-            <option value="email">Email</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="phone">Phone</option>
-          </select>
         </label>
         <label>
           Message

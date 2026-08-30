@@ -1097,6 +1097,14 @@ textarea:focus {
   gap: 12px;
 }
 
+.form-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: #9f3526;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .success-page {
   display: grid;
   place-items: center;
