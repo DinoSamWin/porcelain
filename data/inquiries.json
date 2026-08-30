@@ -1,5 +1,69 @@
 [
   {
+    "id": "inquiry-1788086842919-28a88d",
+    "inquiryId": "IQ-2026-AP-842358",
+    "personId": "P-CCD73F1B3C",
+    "visitorId": "VIS-2026-C34CEBBA-E77F",
+    "ipFingerprint": "e24c48e92b4bc904f2d2352a",
+    "ipPreview": "156.231.*.*",
+    "userAgentFingerprint": "27ba1dde5da41f255eb10ad5",
+    "userAgentPreview": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "repeat": {
+      "samePersonTotal": 2,
+      "sameDeviceTotal": 2,
+      "sameIpTotal": 2,
+      "sameEmailTotal": 1
+    },
+    "source": {
+      "pageType": "product-detail",
+      "pageLabel": "商品详情页：Decorative Fruit Bowl",
+      "submittedFromUrl": "https://porcelain-six.vercel.app/request-quote?product=product-2",
+      "submittedFromPath": "/request-quote?product=product-2",
+      "referrer": "https://porcelain-six.vercel.app/products/product-2",
+      "sourceProduct": {
+        "productId": "prod-1788052745021",
+        "slug": "product-2",
+        "sku": "C998C(L)",
+        "name": "Decorative Fruit Bowl",
+        "imageSrc": "/uploads/1788052799809-luxury-fruit-plate-product-cover-1600x2000.png",
+        "productUrl": "/products/product-2"
+      }
+    },
+    "customer": {
+      "name": "Dean",
+      "companyName": "Dean",
+      "countryRegion": "China",
+      "email": "din@gmail.com",
+      "phone": "",
+      "shippingDestination": "",
+      "preferredContactMethod": "email"
+    },
+    "trade": {
+      "targetMarket": "Europe",
+      "volume": "",
+      "customLogo": "Not sure",
+      "customPackaging": "Not sure",
+      "incoterms": "FOB",
+      "deliveryTime": ""
+    },
+    "message": "",
+    "requirements": "",
+    "items": [
+      {
+        "productId": "prod-1788052745021",
+        "slug": "product-2",
+        "sku": "C998C(L)",
+        "name": "Decorative Fruit Bowl",
+        "imageSrc": "/uploads/1788052799809-luxury-fruit-plate-product-cover-1600x2000.png",
+        "productUrl": "/products/product-2",
+        "quantity": 1
+      }
+    ],
+    "status": "new",
+    "createdAt": "2026-08-30T10:47:22.919Z",
+    "updatedAt": "2026-08-30T10:47:22.919Z"
+  },
+  {
     "id": "inquiry-1788086728427-c3ffba",
     "inquiryId": "IQ-2026-AP-727867",
     "personId": "P-CCD73F1B3C",
