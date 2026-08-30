@@ -12,7 +12,8 @@
       "cat-products"
     ],
     "featuredProductIds": [
-      "prod-1786619552837"
+      "prod-1786619552837",
+      "prod-1788052745021"
     ]
   },
   "categories": [
@@ -98,7 +99,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-21T15:13:08.756Z",
+      "updatedAt": "2026-08-30T01:26:21.592Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -106,6 +107,73 @@
       "mobileBannerImage": {
         "src": "/uploads/1787232910177-call-euqy8mqulajpfcctq2r6zbe5.png",
         "alt": "call euQy8mQuLaJPFCcTq2r6ZbE5"
+      }
+    },
+    {
+      "id": "prod-1788052745021",
+      "slug": "product-2",
+      "name": "Decorative Fruit Bowl",
+      "sku": "C998C(L)",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "High-Temperature Porcelain & Pure Copper",
+      "color": "Turquoise, Antique Gold & Multicolor Floral Pattern",
+      "finish": "High-Temperature Firing, Glaze Painting, Copper Casting & Hand Assembly",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Fruit Serving, Table Decoration, Home Display & Gifting"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "Decorative Fruit Bowl / Home Décor"
+      ],
+      "description": "A luxurious porcelain and pure copper fruit bowl designed for elegant serving and sophisticated home décor.",
+      "images": [
+        {
+          "src": "/uploads/1788052799809-luxury-fruit-plate-product-cover-1600x2000.png",
+          "alt": "luxury fruit plate product cover 1600x2000"
+        },
+        {
+          "src": "/uploads/1788053105033-luxury-fruit-plate-product-detail-2000x2500.png",
+          "alt": "luxury fruit plate product detail 2000x2500"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 2,
+      "isFeatured": true,
+      "featuredOrder": 2,
+      "isHeroBanner": true,
+      "heroOrder": 2,
+      "createdAt": "2026-08-30T01:19:05.021Z",
+      "updatedAt": "2026-08-30T01:26:21.594Z",
+      "bannerImage": {
+        "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
+        "alt": "luxury fruit plate banner daylight dining room 2880x1400"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1788052944316-luxury-fruit-plate-mobile-banner-centered-1600x2200.png",
+        "alt": "luxury fruit plate mobile banner centered 1600x2200"
       }
     }
   ]
