@@ -100,7 +100,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T04:45:48.053Z",
+      "updatedAt": "2026-08-30T06:24:22.356Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -167,7 +167,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T04:45:48.055Z",
+      "updatedAt": "2026-08-30T06:24:22.359Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -234,7 +234,7 @@
       "isHeroBanner": true,
       "heroOrder": 3,
       "createdAt": "2026-08-30T01:57:32.062Z",
-      "updatedAt": "2026-08-30T04:45:48.055Z",
+      "updatedAt": "2026-08-30T06:24:22.359Z",
       "bannerImage": {
         "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
         "alt": "decorative trinket box banner 2880x1400"
@@ -301,7 +301,7 @@
       "isHeroBanner": true,
       "heroOrder": 4,
       "createdAt": "2026-08-30T02:55:56.452Z",
-      "updatedAt": "2026-08-30T04:45:48.055Z",
+      "updatedAt": "2026-08-30T06:24:22.359Z",
       "bannerImage": {
         "src": "/uploads/1788058897415-decorative-flower-vase-ivory-lavender-bedroom-banner-2880x1400.png",
         "alt": "decorative flower vase ivory lavender bedroom banner 2880x1400"
@@ -309,6 +309,69 @@
       "mobileBannerImage": {
         "src": "/uploads/1788059047110-c8ea34eb-c249-4d98-a842-5a17aa67b728.png",
         "alt": "c8ea34eb c249 4d98 a842 5a17aa67b728"
+      }
+    },
+    {
+      "id": "prod-1788070830653",
+      "slug": "product-5",
+      "name": "European Manor Porcelain & Pure Copper Tea Set",
+      "sku": "HJ949H",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "High-Temperature Porcelain and Pure Copper",
+      "color": "Porcelain White, Turquoise Blue, Floral Pink and Antique Gold",
+      "finish": "High-Temperature Firing, Glazed Finish, Floral Decal Decoration and Ornate Copper Detailing",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Suitable for serving tea, afternoon tea, entertaining guests, celebrations or decorative display"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "Tea Set / Porcelain Teaware / Afternoon Tea Set"
+      ],
+      "description": "A luxurious seven-piece porcelain and pure copper tea set featuring turquoise borders, floral artwork and elegant bird-inspired details.",
+      "images": [
+        {
+          "src": "/uploads/1788070875572-chatgpt-image-aug-30-2026-11-26-53-am.png",
+          "alt": "ChatGPT Image Aug 30, 2026, 11 26 53 AM"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 5,
+      "isFeatured": false,
+      "featuredOrder": 5,
+      "isHeroBanner": true,
+      "heroOrder": 5,
+      "createdAt": "2026-08-30T06:20:30.653Z",
+      "updatedAt": "2026-08-30T06:24:22.359Z",
+      "bannerImage": {
+        "src": "/uploads/1788070963457-porcelain-copper-tea-set-manor-garden-banner-2880x1400.png",
+        "alt": "porcelain copper tea set manor garden banner 2880x1400"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1788071025101-porcelain-copper-tea-set-mobile-banner-1600x2200.png",
+        "alt": "porcelain copper tea set mobile banner 1600x2200"
       }
     }
   ]
