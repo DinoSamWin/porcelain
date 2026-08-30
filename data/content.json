@@ -14,7 +14,8 @@
     "featuredProductIds": [
       "prod-1786619552837",
       "prod-1788052745021",
-      "prod-1788055052062"
+      "prod-1788055052062",
+      "prod-1788090512944-u3ebuj"
     ]
   },
   "categories": [
@@ -100,7 +101,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T06:24:22.356Z",
+      "updatedAt": "2026-08-30T12:03:38.106Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -167,7 +168,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T06:24:22.359Z",
+      "updatedAt": "2026-08-30T12:03:38.108Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -234,7 +235,7 @@
       "isHeroBanner": true,
       "heroOrder": 3,
       "createdAt": "2026-08-30T01:57:32.062Z",
-      "updatedAt": "2026-08-30T06:24:22.359Z",
+      "updatedAt": "2026-08-30T12:03:38.108Z",
       "bannerImage": {
         "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
         "alt": "decorative trinket box banner 2880x1400"
@@ -301,7 +302,7 @@
       "isHeroBanner": true,
       "heroOrder": 4,
       "createdAt": "2026-08-30T02:55:56.452Z",
-      "updatedAt": "2026-08-30T06:24:22.359Z",
+      "updatedAt": "2026-08-30T12:03:38.108Z",
       "bannerImage": {
         "src": "/uploads/1788058897415-decorative-flower-vase-ivory-lavender-bedroom-banner-2880x1400.png",
         "alt": "decorative flower vase ivory lavender bedroom banner 2880x1400"
@@ -364,7 +365,7 @@
       "isHeroBanner": true,
       "heroOrder": 5,
       "createdAt": "2026-08-30T06:20:30.653Z",
-      "updatedAt": "2026-08-30T06:24:22.359Z",
+      "updatedAt": "2026-08-30T12:03:38.108Z",
       "bannerImage": {
         "src": "/uploads/1788070963457-porcelain-copper-tea-set-manor-garden-banner-2880x1400.png",
         "alt": "porcelain copper tea set manor garden banner 2880x1400"
@@ -372,6 +373,69 @@
       "mobileBannerImage": {
         "src": "/uploads/1788071025101-porcelain-copper-tea-set-mobile-banner-1600x2200.png",
         "alt": "porcelain copper tea set mobile banner 1600x2200"
+      }
+    },
+    {
+      "id": "prod-1788090512944-u3ebuj",
+      "slug": "product-6",
+      "name": "Lotus & Crane Porcelain Fragrance Bottle",
+      "sku": "B1012C",
+      "categoryId": "cat-products",
+      "collectionId": "col-main",
+      "material": "High-Temperature Porcelain and Pure Copper",
+      "color": "Porcelain White, Turquoise Blue, Pale Green, Floral Pink, Cobalt Blue and Antique Gold",
+      "finish": "High-Temperature Firing, Glazed Finish, Decorative Floral Artwork and Embossed Copper Detailing",
+      "moq": 1,
+      "leadTime": "待确认",
+      "availability": "in-stock",
+      "customizable": false,
+      "marketFit": [
+        "Europe",
+        "Retail",
+        "Importer"
+      ],
+      "usage": [
+        "Suitable for storing fragrance oils, perfume or aromatic liquids, and for use as a standalone decorative object"
+      ],
+      "style": "珐琅瓷",
+      "tags": [
+        "Fragrance Bottle / Aromatherapy Container / Decorative Home Accessory"
+      ],
+      "description": "A luxury porcelain fragrance bottle featuring lotus, peony and crane artwork with an ornate pure copper stopper.",
+      "images": [
+        {
+          "src": "/uploads/1788090812120-porcelain-copper-fragrance-bottle-product-cover-1600x2000.png",
+          "alt": "porcelain copper fragrance bottle product cover 1600x2000"
+        }
+      ],
+      "specification": {
+        "size": "待确认",
+        "weight": "待确认",
+        "packaging": "待确认",
+        "cartonSize": "待确认",
+        "grossWeight": "待确认",
+        "netWeight": "待确认"
+      },
+      "attributes": [],
+      "packagingInfo": [
+        "尺寸待确认",
+        "包装待确认"
+      ],
+      "status": "published",
+      "sortOrder": 6,
+      "isFeatured": true,
+      "featuredOrder": 6,
+      "isHeroBanner": true,
+      "heroOrder": 6,
+      "createdAt": "2026-08-30T11:48:32.944Z",
+      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "bannerImage": {
+        "src": "/uploads/1788091134984-porcelain-copper-fragrance-bottle-desktop-banner-centered-2880x1400.png",
+        "alt": "porcelain copper fragrance bottle desktop banner centered 2880x1400"
+      },
+      "mobileBannerImage": {
+        "src": "/uploads/1788091345242-porcelain-copper-fragrance-bottle-mobile-banner-centered-1600x2200.png",
+        "alt": "porcelain copper fragrance bottle mobile banner centered 1600x2200"
       }
     }
   ]
