@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "id": "inquiry-1788086728427-c3ffba",
+    "inquiryId": "IQ-2026-AP-727867",
+    "personId": "P-CCD73F1B3C",
+    "visitorId": "VIS-2026-C34CEBBA-E77F",
+    "ipFingerprint": "e24c48e92b4bc904f2d2352a",
+    "ipPreview": "156.231.*.*",
+    "userAgentFingerprint": "27ba1dde5da41f255eb10ad5",
+    "userAgentPreview": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "repeat": {
+      "samePersonTotal": 1,
+      "sameDeviceTotal": 1,
+      "sameIpTotal": 1,
+      "sameEmailTotal": 1
+    },
+    "source": {
+      "pageType": "contact",
+      "pageLabel": "联系表单页",
+      "submittedFromUrl": "https://porcelain-six.vercel.app/request-quote",
+      "submittedFromPath": "/request-quote",
+      "referrer": "https://porcelain-six.vercel.app/request-quote"
+    },
+    "customer": {
+      "name": "Dean",
+      "companyName": "Ugreen",
+      "countryRegion": "China",
+      "email": "dinosamw@gmail.com",
+      "phone": "",
+      "shippingDestination": "",
+      "preferredContactMethod": "email"
+    },
+    "trade": {
+      "targetMarket": "Europe",
+      "volume": "",
+      "customLogo": "Not sure",
+      "customPackaging": "Not sure",
+      "incoterms": "FOB",
+      "deliveryTime": ""
+    },
+    "message": "",
+    "requirements": "",
+    "items": [],
+    "status": "new",
+    "createdAt": "2026-08-30T10:45:28.427Z",
+    "updatedAt": "2026-08-30T10:45:28.427Z"
+  }
+]
