@@ -14,8 +14,7 @@
     "featuredProductIds": [
       "prod-1786619552837",
       "prod-1788052745021",
-      "prod-1788055052062",
-      "prod-1788058556452"
+      "prod-1788055052062"
     ]
   },
   "categories": [
@@ -101,7 +100,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T03:09:40.612Z",
+      "updatedAt": "2026-08-30T04:45:48.053Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -168,7 +167,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T03:09:40.614Z",
+      "updatedAt": "2026-08-30T04:45:48.055Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -235,7 +234,7 @@
       "isHeroBanner": true,
       "heroOrder": 3,
       "createdAt": "2026-08-30T01:57:32.062Z",
-      "updatedAt": "2026-08-30T03:09:40.614Z",
+      "updatedAt": "2026-08-30T04:45:48.055Z",
       "bannerImage": {
         "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
         "alt": "decorative trinket box banner 2880x1400"
@@ -297,12 +296,12 @@
       ],
       "status": "published",
       "sortOrder": 4,
-      "isFeatured": true,
+      "isFeatured": false,
       "featuredOrder": 4,
       "isHeroBanner": true,
       "heroOrder": 4,
       "createdAt": "2026-08-30T02:55:56.452Z",
-      "updatedAt": "2026-08-30T03:09:40.614Z",
+      "updatedAt": "2026-08-30T04:45:48.055Z",
       "bannerImage": {
         "src": "/uploads/1788058897415-decorative-flower-vase-ivory-lavender-bedroom-banner-2880x1400.png",
         "alt": "decorative flower vase ivory lavender bedroom banner 2880x1400"
