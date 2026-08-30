@@ -14,8 +14,7 @@
     "featuredProductIds": [
       "prod-1786619552837",
       "prod-1788052745021",
-      "prod-1788055052062",
-      "prod-1788090512944-u3ebuj"
+      "prod-1788055052062"
     ]
   },
   "categories": [
@@ -101,7 +100,7 @@
       "isHeroBanner": true,
       "heroOrder": 1,
       "createdAt": "2026-08-13T11:12:32.837Z",
-      "updatedAt": "2026-08-30T12:03:38.106Z",
+      "updatedAt": "2026-08-30T12:15:23.852Z",
       "bannerImage": {
         "src": "/uploads/1787232883241-call-i9q265rdg4eb0f83ylfzgaql.png",
         "alt": "call i9Q265RDG4Eb0f83YlfzgaqL 副本"
@@ -168,7 +167,7 @@
       "isHeroBanner": true,
       "heroOrder": 2,
       "createdAt": "2026-08-30T01:19:05.021Z",
-      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "updatedAt": "2026-08-30T12:15:23.854Z",
       "bannerImage": {
         "src": "/uploads/1788052860512-luxury-fruit-plate-banner-daylight-dining-room-2880x1400.png",
         "alt": "luxury fruit plate banner daylight dining room 2880x1400"
@@ -235,7 +234,7 @@
       "isHeroBanner": true,
       "heroOrder": 3,
       "createdAt": "2026-08-30T01:57:32.062Z",
-      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "updatedAt": "2026-08-30T12:15:23.854Z",
       "bannerImage": {
         "src": "/uploads/1788055294823-decorative-trinket-box-banner-2880x1400.png",
         "alt": "decorative trinket box banner 2880x1400"
@@ -302,7 +301,7 @@
       "isHeroBanner": true,
       "heroOrder": 4,
       "createdAt": "2026-08-30T02:55:56.452Z",
-      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "updatedAt": "2026-08-30T12:15:23.854Z",
       "bannerImage": {
         "src": "/uploads/1788058897415-decorative-flower-vase-ivory-lavender-bedroom-banner-2880x1400.png",
         "alt": "decorative flower vase ivory lavender bedroom banner 2880x1400"
@@ -365,7 +364,7 @@
       "isHeroBanner": true,
       "heroOrder": 5,
       "createdAt": "2026-08-30T06:20:30.653Z",
-      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "updatedAt": "2026-08-30T12:15:23.854Z",
       "bannerImage": {
         "src": "/uploads/1788070963457-porcelain-copper-tea-set-manor-garden-banner-2880x1400.png",
         "alt": "porcelain copper tea set manor garden banner 2880x1400"
@@ -423,12 +422,12 @@
       ],
       "status": "published",
       "sortOrder": 6,
-      "isFeatured": true,
+      "isFeatured": false,
       "featuredOrder": 6,
       "isHeroBanner": true,
       "heroOrder": 6,
       "createdAt": "2026-08-30T11:48:32.944Z",
-      "updatedAt": "2026-08-30T12:03:38.108Z",
+      "updatedAt": "2026-08-30T12:15:23.854Z",
       "bannerImage": {
         "src": "/uploads/1788091134984-porcelain-copper-fragrance-bottle-desktop-banner-centered-2880x1400.png",
         "alt": "porcelain copper fragrance bottle desktop banner centered 2880x1400"
