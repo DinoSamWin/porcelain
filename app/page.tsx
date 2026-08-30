@@ -1,6 +1,7 @@
 import { ArrowRight, HeartHandshake, ImageUp, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { HomeHeroCarousel } from "@/components/HomeHeroCarousel";
 import { ProductCard } from "@/components/ProductCard";
 import { homeContent, products } from "@/data/catalog";
 import { getAvailabilityShortLabel } from "@/lib/catalog-options";
@@ -16,65 +17,12 @@ const heroProducts = products
 const displayProducts = [...products].sort((a, b) => a.sortOrder - b.sortOrder);
 
 export default function HomePage() {
-  const heroProduct = heroProducts[0] ?? featuredProducts[0] ?? displayProducts[0];
-  const heroImage = heroProduct?.bannerImage?.src || homeContent.hero.image;
-  const heroMobileImage = heroProduct?.mobileBannerImage?.src || heroImage;
-  const heroImageAlt = heroProduct?.bannerImage?.alt ?? heroProduct?.images[0]?.alt ?? "Enamel porcelain product";
-  const heroHref = heroProduct ? `/products/${heroProduct.slug}` : "";
-  const heroMedia = (
-    <>
-      {heroMobileImage !== heroImage ? (
-        <Image
-          src={heroMobileImage}
-          alt={heroImageAlt}
-          fill
-          loading="eager"
-          unoptimized
-          className="phase-hero__image phase-hero__image--mobile"
-          sizes="100vw"
-        />
-      ) : null}
-      <Image
-        src={heroImage}
-        alt={heroImageAlt}
-        fill
-        loading="eager"
-        unoptimized
-        className="phase-hero__image phase-hero__image--desktop"
-        sizes="100vw"
-      />
-    </>
-  );
+  const heroCarouselProducts =
+    heroProducts.length > 0 ? heroProducts : featuredProducts[0] ? [featuredProducts[0]] : displayProducts[0] ? [displayProducts[0]] : [];
 
   return (
     <>
-      <section className="phase-hero" aria-label="Enamel porcelain showcase">
-        {heroImage ? (
-          heroHref ? (
-            <Link className="phase-hero__media phase-hero__media--link" href={heroHref} aria-label={`View ${heroProduct?.name}`}>
-              {heroMedia}
-            </Link>
-          ) : (
-            <div className="phase-hero__media">{heroMedia}</div>
-          )
-        ) : (
-          <div className="phase-hero__empty">
-            <ImageUp size={42} aria-hidden="true" />
-            <span>Waiting for first product image</span>
-          </div>
-        )}
-
-        <div className="phase-hero__copy">
-          <div className="phase-hero__actions">
-            <Link className="btn btn-primary" href="#featured">
-              Explore
-            </Link>
-            <Link className="btn btn-secondary" href="/request-quote">
-              Contact
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeHeroCarousel products={heroCarouselProducts} fallbackImage={homeContent.hero.image} />
 
       <section className="section-pad phase-featured" id="featured">
         <div className="section-heading section-heading--left">

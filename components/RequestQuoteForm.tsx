@@ -3,14 +3,20 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useCart } from "@/components/CartProvider";
-import { createInquiryId } from "@/lib/inquiry";
+import { createInquiryId, getCurrentSourceContext, getOrCreateVisitorId, submitInquiryRecord } from "@/lib/inquiry";
 import type { Product } from "@/types/domain";
 
-export function RequestQuoteForm({ products }: { products: Product[] }) {
+export function RequestQuoteForm({ products, sourceProductSlug = "" }: { products: Product[]; sourceProductSlug?: string }) {
   const router = useRouter();
   const { items, clearCart } = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const sourceProduct = useMemo(
+    () => products.find((product) => product.slug === sourceProductSlug),
+    [products, sourceProductSlug]
+  );
   const selectedProducts = useMemo(
     () =>
       items
@@ -22,26 +28,70 @@ export function RequestQuoteForm({ products }: { products: Product[] }) {
     [items, products]
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
     const inquiryId = createInquiryId();
-    window.localStorage.setItem(
-      "aurelia-last-inquiry",
-      JSON.stringify({
+    const submitItems =
+      items.length > 0
+        ? items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            note: item.note
+          }))
+        : sourceProduct
+          ? [{ productId: sourceProduct.id, quantity: 1 }]
+          : [];
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await submitInquiryRecord({
         inquiryId,
-        email: formData.get("email"),
-        items,
-        tradeInfo: {
-          targetMarket: formData.get("targetMarket"),
-          incoterms: formData.get("incoterms")
+        visitorId: getOrCreateVisitorId(),
+        source: getCurrentSourceContext(sourceProduct ? { id: sourceProduct.id, slug: sourceProduct.slug } : undefined),
+        customer: {
+          name: getFormText(formData, "name"),
+          companyName: getFormText(formData, "companyName"),
+          countryRegion: getFormText(formData, "country"),
+          email: getFormText(formData, "email"),
+          phone: getFormText(formData, "phone"),
+          shippingDestination: getFormText(formData, "destination"),
+          preferredContactMethod: getFormText(formData, "contactMethod")
         },
-        createdAt: new Date().toISOString()
-      })
-    );
-    clearCart();
-    router.push(`/success?inquiryId=${encodeURIComponent(inquiryId)}`);
+        trade: {
+          targetMarket: getFormText(formData, "targetMarket"),
+          volume: getFormText(formData, "volume"),
+          customLogo: getFormText(formData, "customLogo"),
+          customPackaging: getFormText(formData, "customPackaging"),
+          incoterms: getFormText(formData, "incoterms"),
+          deliveryTime: getFormText(formData, "deliveryTime")
+        },
+        requirements: getFormText(formData, "requirements"),
+        items: submitItems
+      });
+
+      window.localStorage.setItem(
+        "aurelia-last-inquiry",
+        JSON.stringify({
+          inquiryId,
+          email: formData.get("email"),
+          items: submitItems,
+          tradeInfo: {
+            targetMarket: formData.get("targetMarket"),
+            incoterms: formData.get("incoterms")
+          },
+          createdAt: new Date().toISOString()
+        })
+      );
+      clearCart();
+      router.push(`/success?inquiryId=${encodeURIComponent(inquiryId)}`);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "意向单提交失败，请稍后重试。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -50,7 +100,7 @@ export function RequestQuoteForm({ products }: { products: Product[] }) {
         <span className="panel-label">Product Confirmation</span>
         <h2>Saved pieces</h2>
         {selectedProducts.length === 0 ? (
-          <p>No saved piece yet. You can still contact sales.</p>
+          <p>{sourceProduct ? `This inquiry is linked to ${sourceProduct.name}.` : "No saved piece yet. You can still contact sales."}</p>
         ) : (
           <ul className="summary-list">
             {selectedProducts.map(({ item, product }) => (
@@ -158,8 +208,9 @@ export function RequestQuoteForm({ products }: { products: Product[] }) {
       </section>
 
       <div className="quote-submit">
-        <button className="btn btn-primary" type="submit">
-          Send Contact Details
+        {submitError ? <p className="form-error">{submitError}</p> : null}
+        <button className="btn btn-primary" disabled={submitting} type="submit">
+          {submitting ? "Sending..." : "Send Contact Details"}
           <ArrowRight size={16} aria-hidden="true" />
         </button>
         <Link className="btn btn-secondary" href="/cart">
@@ -168,4 +219,9 @@ export function RequestQuoteForm({ products }: { products: Product[] }) {
       </div>
     </form>
   );
+}
+
+function getFormText(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
 }

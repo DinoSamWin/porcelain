@@ -3,10 +3,10 @@
 import { ArrowRight, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useMemo } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartProvider";
-import { createInquiryId } from "@/lib/inquiry";
+import { createInquiryId, getCurrentSourceContext, getOrCreateVisitorId, submitInquiryRecord } from "@/lib/inquiry";
 import type { Product } from "@/types/domain";
 
 interface CartExperienceProps {
@@ -16,6 +16,8 @@ interface CartExperienceProps {
 export function CartExperience({ products }: CartExperienceProps) {
   const router = useRouter();
   const { items, updateItem, removeItem, clearCart } = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const cartProducts = useMemo(
     () =>
@@ -28,7 +30,7 @@ export function CartExperience({ products }: CartExperienceProps) {
     [items, products]
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (cartProducts.length === 0) {
       return;
@@ -36,17 +38,47 @@ export function CartExperience({ products }: CartExperienceProps) {
 
     const formData = new FormData(event.currentTarget);
     const inquiryId = createInquiryId();
-    window.localStorage.setItem(
-      "aurelia-last-inquiry",
-      JSON.stringify({
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await submitInquiryRecord({
         inquiryId,
-        email: formData.get("email"),
-        items,
-        createdAt: new Date().toISOString()
-      })
-    );
-    clearCart();
-    router.push(`/success?inquiryId=${encodeURIComponent(inquiryId)}`);
+        visitorId: getOrCreateVisitorId(),
+        source: getCurrentSourceContext(),
+        customer: {
+          name: getFormText(formData, "name"),
+          companyName: getFormText(formData, "companyName"),
+          countryRegion: getFormText(formData, "country"),
+          email: getFormText(formData, "email"),
+          phone: getFormText(formData, "phone"),
+          shippingDestination: getFormText(formData, "destination"),
+          preferredContactMethod: getFormText(formData, "contactMethod")
+        },
+        message: getFormText(formData, "message"),
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          note: item.note
+        }))
+      });
+
+      window.localStorage.setItem(
+        "aurelia-last-inquiry",
+        JSON.stringify({
+          inquiryId,
+          email: formData.get("email"),
+          items,
+          createdAt: new Date().toISOString()
+        })
+      );
+      clearCart();
+      router.push(`/success?inquiryId=${encodeURIComponent(inquiryId)}`);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "意向单提交失败，请稍后重试。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -146,8 +178,9 @@ export function CartExperience({ products }: CartExperienceProps) {
           Message
           <textarea name="message" placeholder="Which pieces are interesting? Need dimensions, closer photos, sample price, or packaging details?" />
         </label>
-        <button className="btn btn-primary" disabled={cartProducts.length === 0} type="submit">
-          Send Interest
+        {submitError ? <p className="form-error">{submitError}</p> : null}
+        <button className="btn btn-primary" disabled={cartProducts.length === 0 || submitting} type="submit">
+          {submitting ? "Sending..." : "Send Interest"}
           <ArrowRight size={16} aria-hidden="true" />
         </button>
         <Link className="text-link" href="/products">
@@ -157,4 +190,9 @@ export function CartExperience({ products }: CartExperienceProps) {
       </form>
     </div>
   );
+}
+
+function getFormText(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
 }

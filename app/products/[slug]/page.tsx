@@ -55,6 +55,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const categoryLabel = getPublicText(product.tags[0]) ?? getPublicText(category?.name);
   const productDescription = getPublicText(product.description) ?? "Visual reference for buyer review.";
   const packagingInfo = getPublicPackagingInfo(product.packagingInfo);
+  const inquiryHref = `/request-quote?product=${encodeURIComponent(product.slug)}`;
   const detailRows = [
     { label: "Material", value: getPublicText(product.material), inquiryLabel: "Ask supplier for material" },
     { label: "Color", value: getPublicText(product.color), inquiryLabel: "Ask supplier for color" },
@@ -90,7 +91,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 {row.value ? (
                   <strong>{row.value}</strong>
                 ) : (
-                  <Link className="detail-inquiry-link" href="/request-quote">
+                  <Link className="detail-inquiry-link" href={inquiryHref}>
                     {row.inquiryLabel}
                   </Link>
                 )}
@@ -105,7 +106,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </div>
           <div className="product-info__actions">
             <AddToInquiryButton productId={product.id} quantity={1} className="btn btn-primary" />
-            <Link className="btn btn-secondary" href="/request-quote">
+            <Link className="btn btn-secondary" href={inquiryHref}>
               Contact Sales
             </Link>
           </div>
@@ -127,14 +128,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 {item.value ? (
                   item.value
                 ) : (
-                  <Link className="detail-inquiry-link" href="/request-quote">
+                  <Link className="detail-inquiry-link" href={inquiryHref}>
                     {item.label}
                   </Link>
                 )}
               </li>
             ))}
           </ul>
-          <Link className="btn btn-primary" href="/request-quote">
+          <Link className="btn btn-primary" href={inquiryHref}>
             <MessageCircle size={16} aria-hidden="true" />
             Send Contact Details
           </Link>

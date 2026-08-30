@@ -1,14 +1,17 @@
 "use client";
 
-import { ArrowLeft, ExternalLink, ImageUp, LogOut, Maximize2, Plus, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, ImageUp, Inbox, LogOut, Maximize2, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { CatalogContent } from "@/data/catalog";
 import { availabilityOptions } from "@/lib/catalog-options";
-import type { Product } from "@/types/domain";
+import type { InquiryRecord, Product } from "@/types/domain";
 
 type PublishMode = "github" | "local";
-type AdminView = "list" | "editor";
+type AdminView = "list" | "editor" | "inquiries";
+type ProductPatch = Partial<Product> | ((product: Product) => Partial<Product>);
+type ProductChangeHandler = (patch: ProductPatch) => void;
+type UploadTaskStatus = "uploading" | "processing" | "done" | "error";
 
 interface RuntimeStatus {
   publishMode: PublishMode;
@@ -27,6 +30,36 @@ interface LocalPreview {
 interface DeployHookResult {
   configured: boolean;
   ok?: boolean;
+  error?: string;
+}
+
+interface UploadTask {
+  id: string;
+  label: string;
+  fileName: string;
+  progress: number;
+  status: UploadTaskStatus;
+  error?: string;
+}
+
+interface UploadOptions {
+  label?: string;
+}
+
+interface AdminUploadResponse {
+  ok?: boolean;
+  src?: string;
+  alt?: string;
+  publishMode?: PublishMode;
+  runtime?: RuntimeStatus;
+  error?: string;
+}
+
+interface AdminInquiriesResponse {
+  ok?: boolean;
+  inquiries?: InquiryRecord[];
+  publishMode?: PublishMode;
+  runtime?: RuntimeStatus;
   error?: string;
 }
 
@@ -108,6 +141,133 @@ const imageSizeGuides = [
   }
 ];
 
+function createId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createBlankProduct({
+  id,
+  index,
+  categoryId,
+  collectionId,
+  src,
+  alt
+}: {
+  id: string;
+  index: number;
+  categoryId: string;
+  collectionId: string;
+  src?: string;
+  alt?: string;
+}): Product {
+  const now = new Date().toISOString();
+
+  return {
+    id,
+    slug: `product-${index}`,
+    name: `新商品 ${index}`,
+    sku: `SKU-${String(index).padStart(3, "0")}`,
+    categoryId,
+    collectionId,
+    material: "",
+    color: "",
+    finish: "",
+    moq: 1,
+    leadTime: "待确认",
+    availability: "in-stock",
+    customizable: false,
+    marketFit: ["Europe", "Retail", "Importer"],
+    usage: [],
+    style: "珐琅瓷",
+    tags: [],
+    description: "",
+    images: src ? [{ src, alt: alt || "商品图片" }] : [],
+    specification: { ...blankSpec },
+    attributes: [],
+    packagingInfo: ["尺寸待确认", "包装待确认"],
+    status: "draft",
+    sortOrder: index,
+    isFeatured: false,
+    featuredOrder: index,
+    isHeroBanner: false,
+    heroOrder: index,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+function uploadFileWithProgress(
+  file: File,
+  adminToken: string,
+  onProgress: (payload: { progress: number; status?: UploadTaskStatus }) => void
+) {
+  return new Promise<AdminUploadResponse>((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const request = new XMLHttpRequest();
+    request.open("POST", "/api/admin/upload");
+    request.setRequestHeader("x-admin-token", adminToken);
+
+    request.upload.onprogress = (event) => {
+      if (!event.lengthComputable) {
+        onProgress({ progress: 35, status: "uploading" });
+        return;
+      }
+
+      const progress = Math.min(92, Math.max(1, Math.round((event.loaded / event.total) * 92)));
+      onProgress({ progress, status: "uploading" });
+    };
+
+    request.upload.onload = () => {
+      onProgress({ progress: 95, status: "processing" });
+    };
+
+    request.onload = () => {
+      const result = parseUploadResponse(request.responseText);
+      if (request.status >= 200 && request.status < 300) {
+        resolve(result);
+        return;
+      }
+
+      reject(createUploadError(result.error ?? `上传失败：服务器返回 ${request.status}`, result.runtime));
+    };
+
+    request.onerror = () => {
+      reject(createUploadError("上传失败：网络连接中断，请稍后重试。"));
+    };
+
+    request.onabort = () => {
+      reject(createUploadError("上传已取消。"));
+    };
+
+    request.send(formData);
+  });
+}
+
+function parseUploadResponse(responseText: string): AdminUploadResponse {
+  try {
+    return JSON.parse(responseText || "{}") as AdminUploadResponse;
+  } catch {
+    return { ok: false, error: "上传失败：服务器返回内容无法解析。" };
+  }
+}
+
+function createUploadError(message: string, runtime?: RuntimeStatus) {
+  return Object.assign(new Error(message), { runtime });
+}
+
+function getUploadError(error: unknown): { message: string; runtime?: RuntimeStatus } {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      runtime: (error as Error & { runtime?: RuntimeStatus }).runtime
+    };
+  }
+
+  return { message: "上传失败" };
+}
+
 export function AdminContentManager() {
   const [adminToken, setAdminToken] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
@@ -119,14 +279,18 @@ export function AdminContentManager() {
   const [status, setStatus] = useState("请输入后台密码登录");
   const [publishNotice, setPublishNotice] = useState("");
   const [localPreviews, setLocalPreviews] = useState<LocalPreview[]>([]);
+  const [uploadTasks, setUploadTasks] = useState<UploadTask[]>([]);
+  const [inquiries, setInquiries] = useState<InquiryRecord[]>([]);
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const clearUploadTimers = useRef<number[]>([]);
 
   const selectedProduct = useMemo(
     () => content.products.find((product) => product.id === selectedProductId),
     [content.products, selectedProductId]
   );
   const publishingBlocked = Boolean(runtime && !runtime.canPublishOnline);
+  const hasActiveUploads = uploadTasks.some((task) => task.status === "uploading" || task.status === "processing");
 
   useEffect(() => {
     const savedToken = window.localStorage.getItem(adminTokenStorageKey);
@@ -134,6 +298,12 @@ export function AdminContentManager() {
 
     setAdminToken(savedToken);
     void loginWithToken(savedToken, { remember: false, restoring: true });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearUploadTimers.current.forEach((timer) => window.clearTimeout(timer));
+    };
   }, []);
 
   async function login() {
@@ -161,6 +331,7 @@ export function AdminContentManager() {
       setLoggedIn(true);
       setStatus(getRuntimeStatusText(result.runtime) ?? "已登录，可以上传商品");
       setPublishNotice("");
+      void refreshInquiries(token, { silent: true });
       if (remember) {
         window.localStorage.setItem(adminTokenStorageKey, token);
       }
@@ -175,53 +346,34 @@ export function AdminContentManager() {
   }
 
   function createProduct(src?: string, alt?: string) {
-    const index = content.products.length + 1;
-    const id = `prod-${Date.now()}`;
-    const product: Product = {
-      id,
-      slug: `product-${index}`,
-      name: `新商品 ${index}`,
-      sku: `SKU-${String(index).padStart(3, "0")}`,
-      categoryId: content.categories[0]?.id ?? "cat-products",
-      collectionId: content.collections[0]?.id ?? "col-main",
-      material: "",
-      color: "",
-      finish: "",
-      moq: 1,
-      leadTime: "待确认",
-      availability: "in-stock",
-      customizable: false,
-      marketFit: ["Europe", "Retail", "Importer"],
-      usage: [],
-      style: "珐琅瓷",
-      tags: [],
-      description: "",
-      images: src ? [{ src, alt: alt || "商品图片" }] : [],
-      specification: blankSpec,
-      attributes: [],
-      packagingInfo: ["尺寸待确认", "包装待确认"],
-      status: "draft",
-      sortOrder: index,
-      isFeatured: false,
-      featuredOrder: index,
-      isHeroBanner: false,
-      heroOrder: index,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    const id = createId("prod");
 
     setContent((current) => ({
       ...current,
-      products: [...current.products, product]
+      products: [
+        ...current.products,
+        createBlankProduct({
+          id,
+          index: current.products.length + 1,
+          categoryId: current.categories[0]?.id ?? "cat-products",
+          collectionId: current.collections[0]?.id ?? "col-main",
+          src,
+          alt
+        })
+      ]
     }));
     setSelectedProductId(id);
     setAdminView("editor");
   }
 
-  function updateProduct(productId: string, patch: Partial<Product>) {
+  function updateProduct(productId: string, patch: ProductPatch) {
     setContent((current) => ({
       ...current,
-      products: current.products.map((product) => (product.id === productId ? { ...product, ...patch } : product))
+      products: current.products.map((product) => {
+        if (product.id !== productId) return product;
+        const resolvedPatch = typeof patch === "function" ? patch(product) : patch;
+        return { ...product, ...resolvedPatch, updatedAt: new Date().toISOString() };
+      })
     }));
   }
 
@@ -246,35 +398,61 @@ export function AdminContentManager() {
     setAdminView("editor");
   }
 
-  async function uploadImage(file: File, onUploaded: (src: string, alt: string) => void) {
-    setBusy(true);
-    setStatus("正在上传图片...");
+  async function uploadImage(file: File, onUploaded: (src: string, alt: string) => Promise<void> | void, options: UploadOptions = {}) {
+    const taskId = createId("upload");
+    const label = options.label ?? "图片";
+    const previewSrc = URL.createObjectURL(file);
+
+    setUploadTasks((current) => [
+      {
+        id: taskId,
+        label,
+        fileName: file.name,
+        progress: 1,
+        status: "uploading"
+      },
+      ...current
+    ]);
+    setStatus(`${label} 已加入上传队列，可以继续选择其它图片。`);
     setPublishNotice("");
+
     try {
-      const previewSrc = URL.createObjectURL(file);
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/admin/upload", {
-        method: "POST",
-        headers: { "x-admin-token": adminToken },
-        body: formData
+      const result = await uploadFileWithProgress(file, adminToken, ({ progress, status: taskStatus }) => {
+        setUploadTasks((current) =>
+          current.map((task) => (task.id === taskId ? { ...task, progress, status: taskStatus ?? task.status } : task))
+        );
       });
-      const result = await response.json();
       if (result.runtime) setRuntime(result.runtime);
 
-      if (!response.ok) {
+      const uploadedSrc = result.src;
+      if (!uploadedSrc) {
         throw new Error(result.error ?? "上传失败");
       }
 
-      onUploaded(result.src, result.alt);
-      setLocalPreviews((current) => [...current.filter((preview) => preview.remoteSrc !== result.src), { remoteSrc: result.src, previewSrc }]);
+      await onUploaded(uploadedSrc, result.alt ?? "");
+      setLocalPreviews((current) => [...current.filter((preview) => preview.remoteSrc !== uploadedSrc), { remoteSrc: uploadedSrc, previewSrc }]);
       setPublishMode(result.publishMode ?? publishMode);
-      setStatus("图片已上传，预览先显示本地图片；点保存发布后会进入线上发布流程");
+      setUploadTasks((current) =>
+        current.map((task) => (task.id === taskId ? { ...task, progress: 100, status: "done" } : task))
+      );
+      setStatus(`${label} 上传完成；点保存发布后会进入线上发布流程。`);
+      clearFinishedUploadTask(taskId);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "上传失败");
-    } finally {
-      setBusy(false);
+      URL.revokeObjectURL(previewSrc);
+      const uploadError = getUploadError(error);
+      if (uploadError.runtime) setRuntime(uploadError.runtime);
+      setUploadTasks((current) =>
+        current.map((task) => (task.id === taskId ? { ...task, progress: 100, status: "error", error: uploadError.message } : task))
+      );
+      setStatus(uploadError.message);
     }
+  }
+
+  function clearFinishedUploadTask(taskId: string) {
+    const timer = window.setTimeout(() => {
+      setUploadTasks((current) => current.filter((task) => task.id !== taskId || task.status === "error"));
+    }, 8000);
+    clearUploadTimers.current = [...clearUploadTimers.current, timer];
   }
 
   async function saveContent() {
@@ -307,6 +485,37 @@ export function AdminContentManager() {
       setStatus(error instanceof Error ? error.message : "保存失败");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function refreshInquiries(token = adminToken, options: { silent?: boolean } = {}) {
+    if (!options.silent) {
+      setBusy(true);
+      setStatus("正在读取意向单记录...");
+    }
+
+    try {
+      const response = await fetch("/api/admin/inquiries", {
+        headers: { "x-admin-token": token }
+      });
+      const result = (await response.json()) as AdminInquiriesResponse;
+      if (result.runtime) setRuntime(result.runtime);
+      if (!response.ok) {
+        throw new Error(result.error ?? "读取意向单失败");
+      }
+
+      setInquiries(result.inquiries ?? []);
+      if (!options.silent) {
+        setStatus(`已读取 ${result.inquiries?.length ?? 0} 条意向单记录`);
+      }
+    } catch (error) {
+      if (!options.silent) {
+        setStatus(error instanceof Error ? error.message : "读取意向单失败");
+      }
+    } finally {
+      if (!options.silent) {
+        setBusy(false);
+      }
     }
   }
 
@@ -351,8 +560,18 @@ export function AdminContentManager() {
           </div>
         </div>
         <nav aria-label="后台导航">
-          <button className="is-active" type="button" onClick={() => setAdminView("list")}>
+          <button className={adminView === "list" || adminView === "editor" ? "is-active" : ""} type="button" onClick={() => setAdminView("list")}>
             商品管理
+          </button>
+          <button
+            className={adminView === "inquiries" ? "is-active" : ""}
+            type="button"
+            onClick={() => {
+              setAdminView("inquiries");
+              void refreshInquiries();
+            }}
+          >
+            意向单记录
           </button>
         </nav>
         <div className="admin-dashboard-help">
@@ -365,8 +584,8 @@ export function AdminContentManager() {
       <section className="admin-dashboard-main">
         <header className="admin-simple-header">
           <div>
-            <span>{adminView === "list" ? "商品后台" : "商品编辑"}</span>
-            <h1>{adminView === "list" ? "商品管理" : "商品编辑详情页"}</h1>
+            <span>{getAdminViewKicker(adminView)}</span>
+            <h1>{getAdminViewTitle(adminView)}</h1>
           </div>
           <div className="admin-simple-actions">
             {adminView === "editor" ? (
@@ -375,14 +594,23 @@ export function AdminContentManager() {
                 返回商品管理
               </button>
             ) : null}
-            <button className="btn btn-secondary" type="button" onClick={() => createProduct()}>
-              <Plus size={16} aria-hidden="true" />
-              新建商品
-            </button>
-            <button className="btn btn-primary" type="button" onClick={saveContent} disabled={busy || publishingBlocked}>
-              <Save size={16} aria-hidden="true" />
-              保存发布
-            </button>
+            {adminView === "inquiries" ? (
+              <button className="btn btn-secondary" type="button" onClick={() => void refreshInquiries()} disabled={busy}>
+                <RefreshCw size={16} aria-hidden="true" />
+                刷新记录
+              </button>
+            ) : (
+              <>
+                <button className="btn btn-secondary" type="button" onClick={() => createProduct()}>
+                  <Plus size={16} aria-hidden="true" />
+                  新建商品
+                </button>
+                <button className="btn btn-primary" type="button" onClick={saveContent} disabled={busy || publishingBlocked || hasActiveUploads}>
+                  <Save size={16} aria-hidden="true" />
+                  {busy ? "保存中..." : hasActiveUploads ? "等待上传完成" : "保存发布"}
+                </button>
+              </>
+            )}
             <button
               className="icon-button"
               type="button"
@@ -402,6 +630,7 @@ export function AdminContentManager() {
         <div className="admin-simple-status">
           <span>{getPublishModeLabel(publishMode, runtime)}</span>
           <p>{status}</p>
+          {uploadTasks.length > 0 ? <UploadQueue tasks={uploadTasks} /> : null}
           {publishNotice ? (
             <div className="admin-publish-notice">
               <p>{publishNotice}</p>
@@ -431,14 +660,16 @@ export function AdminContentManager() {
         </div>
 
         <div className="admin-workspace">
-          {adminView === "list" ? (
+          {adminView === "inquiries" ? (
+            <InquiryRecordsPanel inquiries={inquiries} disabled={busy} onRefresh={() => void refreshInquiries()} />
+          ) : adminView === "list" ? (
             <ProductManagementList
               products={content.products}
               localPreviews={localPreviews}
               disabled={busy || publishingBlocked}
               onCreate={() => createProduct()}
               onCreateFromImage={(file) => {
-                void uploadImage(file, (src, alt) => createProduct(src, alt));
+                void uploadImage(file, (src, alt) => createProduct(src, alt), { label: "新商品图片" });
               }}
               onOpen={openProductEditor}
             />
@@ -482,6 +713,265 @@ export function AdminContentManager() {
   );
 }
 
+function getAdminViewKicker(adminView: AdminView) {
+  if (adminView === "inquiries") return "客户线索";
+  if (adminView === "editor") return "商品编辑";
+  return "商品后台";
+}
+
+function getAdminViewTitle(adminView: AdminView) {
+  if (adminView === "inquiries") return "意向单记录";
+  if (adminView === "editor") return "商品编辑详情页";
+  return "商品管理";
+}
+
+function InquiryRecordsPanel({
+  inquiries,
+  disabled,
+  onRefresh
+}: {
+  inquiries: InquiryRecord[];
+  disabled: boolean;
+  onRefresh: () => void;
+}) {
+  const sortedInquiries = [...inquiries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const repeatPeopleCount = sortedInquiries.filter((inquiry) => inquiry.repeat.samePersonTotal > 1 || inquiry.repeat.sameIpTotal > 1).length;
+
+  return (
+    <section className="admin-inquiries-panel">
+      <div className="admin-inquiries-panel__head">
+        <div>
+          <span>意向单记录</span>
+          <h2>客户提交记录</h2>
+          <p>
+            共 {sortedInquiries.length} 条记录，{repeatPeopleCount} 条命中同人或同 IP 判断。
+          </p>
+        </div>
+        <button className="btn btn-secondary" type="button" onClick={onRefresh} disabled={disabled}>
+          <RefreshCw size={16} aria-hidden="true" />
+          刷新记录
+        </button>
+      </div>
+
+      {sortedInquiries.length === 0 ? (
+        <div className="admin-empty-uploader">
+          <Inbox size={34} aria-hidden="true" />
+          <h2>还没有意向单</h2>
+          <p>前台客户提交联系表单或意向清单后，会出现在这里。</p>
+        </div>
+      ) : (
+        <div className="admin-inquiry-list">
+          {sortedInquiries.map((inquiry) => (
+            <InquiryRecordCard inquiry={inquiry} key={inquiry.id} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function InquiryRecordCard({ inquiry }: { inquiry: InquiryRecord }) {
+  const customerRows: Array<[string, string | undefined]> = [
+    ["姓名", inquiry.customer.name],
+    ["公司", inquiry.customer.companyName],
+    ["国家/地区", inquiry.customer.countryRegion],
+    ["邮箱", inquiry.customer.email],
+    ["电话 / WhatsApp", inquiry.customer.phone],
+    ["收货目的地", inquiry.customer.shippingDestination],
+    ["首选联系", getContactMethodLabel(inquiry.customer.preferredContactMethod)]
+  ];
+  const tradeRows: Array<[string, string | undefined]> = [
+    ["目标市场", inquiry.trade.targetMarket],
+    ["意向等级 / 需求", inquiry.trade.volume],
+    ["定制 Logo", inquiry.trade.customLogo],
+    ["定制包装", inquiry.trade.customPackaging],
+    ["贸易条款", inquiry.trade.incoterms],
+    ["期望交付", inquiry.trade.deliveryTime],
+    ["留言", inquiry.message],
+    ["跟进要求", inquiry.requirements]
+  ];
+  const sourceProduct = inquiry.source.sourceProduct;
+
+  return (
+    <article className="admin-inquiry-card">
+      <header className="admin-inquiry-card__head">
+        <div>
+          <span>{formatDateTime(inquiry.createdAt)}</span>
+          <h3>{inquiry.inquiryId}</h3>
+        </div>
+        <div className="admin-inquiry-card__badges">
+          <span>{getInquiryStatusLabel(inquiry.status)}</span>
+          <span>人物ID {inquiry.personId}</span>
+          <span>同人 {inquiry.repeat.samePersonTotal} 次</span>
+          <span>同IP {inquiry.repeat.sameIpTotal} 次</span>
+        </div>
+      </header>
+
+      <div className="admin-inquiry-grid">
+        <section>
+          <h4>重复判断</h4>
+          <FieldLine label="访客ID" value={inquiry.visitorId} mono />
+          <FieldLine label="IP标识" value={`${inquiry.ipPreview} / ${inquiry.ipFingerprint}`} mono />
+          <FieldLine label="设备指纹" value={inquiry.userAgentFingerprint} mono />
+          <FieldLine label="设备信息" value={inquiry.userAgentPreview} />
+          <FieldLine label="同设备提交" value={`${inquiry.repeat.sameDeviceTotal} 次`} />
+          <FieldLine label="同邮箱提交" value={`${inquiry.repeat.sameEmailTotal} 次`} />
+        </section>
+
+        <section>
+          <h4>来源页面</h4>
+          <FieldLine label="来源类型" value={inquiry.source.pageLabel} />
+          <FieldLine label="提交页面" value={inquiry.source.submittedFromPath || inquiry.source.submittedFromUrl} />
+          <FieldLine label="浏览器上一页" value={inquiry.source.referrer || "无"} />
+          {sourceProduct ? (
+            <div className="admin-inquiry-source-product">
+              <div>
+                {sourceProduct.imageSrc ? <AdminPreviewImage src={sourceProduct.imageSrc} alt={sourceProduct.name} sizes="72px" /> : <span>无图</span>}
+              </div>
+              <div>
+                <strong>{sourceProduct.name}</strong>
+                <small>{sourceProduct.sku}</small>
+                <a href={sourceProduct.productUrl} target="_blank" rel="noreferrer">
+                  查看商品详情
+                </a>
+              </div>
+            </div>
+          ) : null}
+        </section>
+
+        <section>
+          <h4>客户字段</h4>
+          {customerRows.map(([label, value]) => (
+            <FieldLine label={label} value={value} key={label} />
+          ))}
+        </section>
+
+        <section>
+          <h4>贸易 / 留言字段</h4>
+          {tradeRows.map(([label, value]) => (
+            <FieldLine label={label} value={value} key={label} />
+          ))}
+        </section>
+      </div>
+
+      <section className="admin-inquiry-products">
+        <h4>意向商品</h4>
+        {inquiry.items.length === 0 ? (
+          <p>这条记录没有关联具体商品，只记录提交页面。</p>
+        ) : (
+          <div>
+            {inquiry.items.map((item) => (
+              <article key={`${inquiry.id}-${item.productId}`}>
+                <div>
+                  {item.imageSrc ? <AdminPreviewImage src={item.imageSrc} alt={item.name} sizes="84px" /> : <span>无图</span>}
+                </div>
+                <div>
+                  <strong>{item.name}</strong>
+                  <small>{item.sku}</small>
+                  <p>数量：{item.quantity}</p>
+                  {item.note ? <p>备注：{item.note}</p> : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </article>
+  );
+}
+
+function FieldLine({ label, value, mono = false }: { label: string; value: string | number | undefined; mono?: boolean }) {
+  return (
+    <p className="admin-inquiry-field">
+      <span>{label}</span>
+      <strong className={mono ? "is-mono" : ""}>{value ? value : "未填写"}</strong>
+    </p>
+  );
+}
+
+function getContactMethodLabel(method: InquiryRecord["customer"]["preferredContactMethod"]) {
+  const labels: Record<InquiryRecord["customer"]["preferredContactMethod"], string> = {
+    email: "Email",
+    whatsapp: "WhatsApp",
+    phone: "Phone"
+  };
+  return labels[method] ?? method;
+}
+
+function getInquiryStatusLabel(status: InquiryRecord["status"]) {
+  const labels: Record<InquiryRecord["status"], string> = {
+    new: "新线索",
+    contacted: "已联系",
+    "quotation-sent": "已报价",
+    negotiating: "沟通中",
+    "converted-to-order": "已转订单",
+    closed: "已关闭"
+  };
+  return labels[status] ?? status;
+}
+
+function formatDateTime(value: string) {
+  if (!value) return "未知时间";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "未知时间";
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function UploadQueue({ tasks }: { tasks: UploadTask[] }) {
+  const activeCount = tasks.filter((task) => task.status === "uploading" || task.status === "processing").length;
+
+  return (
+    <section className="admin-upload-queue" aria-live="polite">
+      <div className="admin-upload-queue__head">
+        <span>上传队列</span>
+        <strong>{activeCount > 0 ? `${activeCount} 个进行中` : "最近上传"}</strong>
+      </div>
+      <div className="admin-upload-queue__list">
+        {tasks.slice(0, 6).map((task) => {
+          const progress = Math.min(100, Math.max(0, task.progress));
+
+          return (
+            <article className={`admin-upload-task admin-upload-task--${task.status}`} key={task.id}>
+              <div className="admin-upload-task__meta">
+                <div>
+                  <strong>{task.label}</strong>
+                  <small>{task.fileName}</small>
+                </div>
+                <span>{getUploadTaskStatusLabel(task)}</span>
+              </div>
+              <div
+                className="admin-upload-task__bar"
+                role="progressbar"
+                aria-label={`${task.label} 上传进度`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+              >
+                <span style={{ width: `${progress}%` }} />
+              </div>
+              {task.error ? <p>{task.error}</p> : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function getUploadTaskStatusLabel(task: UploadTask) {
+  if (task.status === "done") return "完成";
+  if (task.status === "error") return "失败";
+  if (task.status === "processing") return "处理中";
+  return `${task.progress}%`;
+}
+
 function ProductManagementList({
   products,
   localPreviews,
@@ -518,10 +1008,9 @@ function ProductManagementList({
           <UploadButton
             disabled={disabled}
             label="上传图片新建商品"
+            multiple
             onUpload={(files) => {
-              const file = files[0];
-              if (!file) return;
-              onCreateFromImage(file);
+              files.forEach((file) => onCreateFromImage(file));
             }}
           />
         </div>
@@ -679,26 +1168,30 @@ function ProductSimpleEditor({
   product: Product;
   localPreviews: LocalPreview[];
   disabled?: boolean;
-  onChange: (patch: Partial<Product>) => void;
+  onChange: ProductChangeHandler;
   onRemove: () => void;
-  onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
+  onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void, options?: UploadOptions) => Promise<void>;
 }) {
   function replaceMainImage(src: string, alt: string) {
-    onChange({
-      images: [{ src, alt: alt || product.name }, ...product.images.slice(1)]
+    onChange((currentProduct) => {
+      return {
+        images: [{ src, alt: alt || currentProduct.name }, ...currentProduct.images.slice(1)]
+      };
     });
   }
 
   function appendGalleryImages(files: File[]) {
-    let nextImages = product.images;
-    void (async () => {
-      for (const file of files) {
-        await onUpload(file, (src, alt) => {
-          nextImages = [...nextImages, { src, alt: alt || product.name }];
-        });
-      }
-      onChange({ images: nextImages });
-    })();
+    files.forEach((file, index) => {
+      void onUpload(
+        file,
+        (src, alt) => {
+          onChange((currentProduct) => ({
+            images: [...currentProduct.images, { src, alt: alt || currentProduct.name }]
+          }));
+        },
+        { label: `详情图 ${index + 1}` }
+      );
+    });
   }
 
   return (
@@ -710,7 +1203,7 @@ function ProductSimpleEditor({
           onUpload={(files) => {
             const file = files[0];
             if (!file) return;
-            void onUpload(file, replaceMainImage);
+            void onUpload(file, replaceMainImage, { label: "商品主图" });
           }}
         />
         <UploadButton disabled={disabled} label="追加详情图" multiple onUpload={appendGalleryImages} />
@@ -903,8 +1396,8 @@ function BannerAssetPanel({
   product: Product;
   localPreviews: LocalPreview[];
   disabled: boolean;
-  onChange: (patch: Partial<Product>) => void;
-  onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void) => Promise<void>;
+  onChange: ProductChangeHandler;
+  onUpload: (file: File, onUploaded: (src: string, alt: string) => Promise<void> | void, options?: UploadOptions) => Promise<void>;
 }) {
   const desktopSrc = product.bannerImage?.src ? getPreviewSrc(product.bannerImage.src, localPreviews) : "";
   const mobileSrc = product.mobileBannerImage?.src ? getPreviewSrc(product.mobileBannerImage.src, localPreviews) : "";
@@ -925,7 +1418,9 @@ function BannerAssetPanel({
           disabled={disabled}
           uploadLabel={product.bannerImage?.src ? "替换桌面 Banner" : "上传桌面 Banner"}
           onUpload={(file) => {
-            void onUpload(file, (src, alt) => onChange({ bannerImage: { src, alt: alt || `${product.name} desktop banner` } }));
+            void onUpload(file, (src, alt) => onChange({ bannerImage: { src, alt: alt || `${product.name} desktop banner` } }), {
+              label: "桌面 Banner"
+            });
           }}
         />
         <BannerAssetSlot
@@ -935,7 +1430,9 @@ function BannerAssetPanel({
           disabled={disabled}
           uploadLabel={product.mobileBannerImage?.src ? "替换移动 Banner" : "上传移动 Banner"}
           onUpload={(file) => {
-            void onUpload(file, (src, alt) => onChange({ mobileBannerImage: { src, alt: alt || `${product.name} mobile banner` } }));
+            void onUpload(file, (src, alt) => onChange({ mobileBannerImage: { src, alt: alt || `${product.name} mobile banner` } }), {
+              label: "移动 Banner"
+            });
           }}
         />
       </div>

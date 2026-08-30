@@ -1,9 +1,10 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { CatalogContent } from "@/data/catalog";
-import type { Category, Product } from "@/types/domain";
+import type { Category, InquiryRecord, Product } from "@/types/domain";
 
 export const contentFilePath = path.join(process.cwd(), "data", "content.json");
+export const inquiriesFilePath = path.join(process.cwd(), "data", "inquiries.json");
 export const uploadDirPath = path.join(process.cwd(), "public", "uploads");
 
 interface GitHubContentResponse {
@@ -52,6 +53,54 @@ export async function writeCatalogContent(content: CatalogContent) {
 
   assertWritableLocalMode();
   await fs.writeFile(contentFilePath, nextContent, "utf8");
+}
+
+export async function readInquiryRecords() {
+  const github = getGitHubConfig();
+
+  if (github) {
+    const remote = await getGitHubContent("data/inquiries.json");
+    if (!remote.content) {
+      return [] as InquiryRecord[];
+    }
+
+    if (remote.encoding === "base64") {
+      return JSON.parse(Buffer.from(remote.content, "base64").toString("utf8")) as InquiryRecord[];
+    }
+  }
+
+  try {
+    const raw = await fs.readFile(inquiriesFilePath, "utf8");
+    return JSON.parse(raw) as InquiryRecord[];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [] as InquiryRecord[];
+    }
+
+    throw error;
+  }
+}
+
+export async function appendInquiryRecord(record: InquiryRecord) {
+  const records = await readInquiryRecords();
+  await writeInquiryRecords([record, ...records]);
+}
+
+async function writeInquiryRecords(records: InquiryRecord[]) {
+  const nextRecords = `${JSON.stringify(records, null, 2)}\n`;
+  const github = getGitHubConfig();
+
+  if (github) {
+    await putGitHubContent({
+      filePath: "data/inquiries.json",
+      content: Buffer.from(nextRecords, "utf8"),
+      message: `Record buyer inquiry ${records[0]?.inquiryId ?? ""}`.trim()
+    });
+    return;
+  }
+
+  assertWritableLocalMode();
+  await fs.writeFile(inquiriesFilePath, nextRecords, "utf8");
 }
 
 export async function saveUploadedImage({ fileName, buffer }: ImageUploadPayload) {

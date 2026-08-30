@@ -93,6 +93,74 @@ export interface InquiryItem {
   note?: string;
 }
 
+export interface SubmittedInquiryProduct {
+  productId: string;
+  slug: string;
+  sku: string;
+  name: string;
+  imageSrc: string;
+  productUrl: string;
+  quantity: number;
+  note?: string;
+}
+
+export interface InquirySourceProduct {
+  productId: string;
+  slug: string;
+  sku: string;
+  name: string;
+  imageSrc: string;
+  productUrl: string;
+}
+
+export interface InquiryRecord {
+  id: string;
+  inquiryId: string;
+  personId: string;
+  visitorId: string;
+  ipFingerprint: string;
+  ipPreview: string;
+  userAgentFingerprint: string;
+  userAgentPreview: string;
+  repeat: {
+    samePersonTotal: number;
+    sameDeviceTotal: number;
+    sameIpTotal: number;
+    sameEmailTotal: number;
+  };
+  source: {
+    pageType: "home" | "product-list" | "product-detail" | "interest-list" | "contact" | "unknown";
+    pageLabel: string;
+    submittedFromUrl: string;
+    submittedFromPath: string;
+    referrer?: string;
+    sourceProduct?: InquirySourceProduct;
+  };
+  customer: {
+    name: string;
+    companyName: string;
+    countryRegion: string;
+    email: string;
+    phone?: string;
+    shippingDestination?: string;
+    preferredContactMethod: "email" | "whatsapp" | "phone";
+  };
+  trade: {
+    targetMarket?: string;
+    volume?: string;
+    customLogo?: string;
+    customPackaging?: string;
+    incoterms?: string;
+    deliveryTime?: string;
+  };
+  message?: string;
+  requirements?: string;
+  items: SubmittedInquiryProduct[];
+  status: InquiryStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type InquiryStatus =
   | "new"
   | "contacted"
